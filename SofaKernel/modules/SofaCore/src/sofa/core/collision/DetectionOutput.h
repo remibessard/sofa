@@ -104,6 +104,11 @@ public:
                 (sofa::core::CollisionModel* ) nullptr), id(0), value(0.0), deltaT(0.0)
     {
     }
+
+    bool operator < (const DetectionOutput& dop) const
+    {
+        return (elem.first.getIndex() > dop.elem.first.getIndex());
+    }
 };
 
 
@@ -128,6 +133,7 @@ public:
     {
         return (unsigned int)this->Vector::size();
     }
+
 };
 
 } // namespace collision

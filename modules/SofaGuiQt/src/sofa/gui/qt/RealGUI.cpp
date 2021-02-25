@@ -265,6 +265,7 @@ void RealGUI::CreateApplication(int /*_argc*/, char** /*_argv*/)
     argv[0] = strdup ( BaseGUI::GetProgramName() );
     argv[1]=nullptr;
     application = new QSOFAApplication ( *argc,argv );
+	application->setStyle("fusion");
 
     //force locale to Standard C
     //(must be done immediatly after the QApplication has been created)

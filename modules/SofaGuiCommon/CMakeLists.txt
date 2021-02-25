@@ -5,6 +5,7 @@ find_package(SofaBase REQUIRED)
 find_package(SofaUserInteraction REQUIRED)
 find_package(SofaGraphComponent REQUIRED)
 
+sofa_find_package(Qt5 COMPONENTS Core OpenGL QUIET)
 
 set(SRC_ROOT src/sofa/gui)
 
@@ -38,7 +39,7 @@ set(SOURCE_FILES
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC SofaBase SofaGraphComponent SofaUserInteraction)
+target_link_libraries(${PROJECT_NAME} PUBLIC SofaBase SofaGraphComponent SofaUserInteraction Qt5::Core Qt5::OpenGL)
 
 sofa_add_targets_to_package(
     PACKAGE_NAME SofaGui

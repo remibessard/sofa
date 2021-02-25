@@ -79,6 +79,7 @@ SparseGridTopology::SparseGridTopology(bool _isVirtual)
     : _fillWeighted(initData(&_fillWeighted, true, "fillWeighted", "Is quantity of matter inside a cell taken into account? (.5 for boundary, 1 for inside)"))
     , d_bOnlyInsideCells(initData(&d_bOnlyInsideCells, false, "onlyInsideCells", "Select only inside cells (exclude boundary cells)"))
     , n(initData(&n, Vec3i(2,2,2), "n", "grid resolution"))
+	, d_excludeInsideCells(initData(&d_excludeInsideCells, false, "excludeInsideCells", "Exclude inside cells"))
     , _min(initData(&_min, Vector3(0,0,0), "min","Min"))
     , _max(initData(&_max, Vector3(0,0,0), "max","Max"))
     , _cellWidth(initData(&_cellWidth, (SReal)0.0, "cellWidth","if > 0 : dimension of each cell in the created grid"))
@@ -910,8 +911,8 @@ void SparseGridTopology::buildFromRegularGridTypes(sofa::core::sptr<RegularGridT
     // add INSIDE cubes to valid cells
     for(Index w=0; w<regularGrid->getNbHexahedra(); ++w)
     {
-        if( regularGridTypes[w] == INSIDE )
-        {
+		if (regularGridTypes[w] == INSIDE && !d_excludeInsideCells.getValue())
+		{
             _types.push_back(INSIDE);
             _indicesOfRegularCubeInSparseGrid[w] = cubeCntr++;
             _indicesOfCubeinRegularGrid.push_back( w );

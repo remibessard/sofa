@@ -125,10 +125,10 @@ void BeamLinearMapping<TIn, TOut>::apply(const core::MechanicalParams * /*mparam
         int in0 = helper::rfloor(inpos[0]);
         if (in0<0) in0 = 0; else if (in0 > (int)in.size()-2) in0 = in.size()-2;
         inpos[0] -= in0;
-        rotatedPoints0[i] = in[in0].getOrientation().rotate(inpos) * beamLength[in0];
+        rotatedPoints0[i] = in[in0].getOrientation().rotate(inpos) * beamLength[in0] * 0.5;
         Coord out0 = in[in0].getCenter() + rotatedPoints0[i];
         Coord inpos1 = inpos; inpos1[0] -= 1;
-        rotatedPoints1[i] = in[in0+1].getOrientation().rotate(inpos1) * beamLength[in0];
+        rotatedPoints1[i] = in[in0+1].getOrientation().rotate(inpos1) * beamLength[in0] * 0.5;
         Coord out1 = in[in0+1].getCenter() + rotatedPoints1[i];
         Real fact = (Real)inpos[0];
         fact = 3*(fact*fact)-2*(fact*fact*fact);

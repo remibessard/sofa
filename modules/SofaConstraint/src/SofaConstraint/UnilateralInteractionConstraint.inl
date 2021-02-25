@@ -410,11 +410,11 @@ void UnilateralInteractionConstraint<DataTypes>::draw(const core::visual::Visual
         redVertices.push_back(c.Q);
 
         otherVertices.push_back(c.P);        
-        otherVertices.push_back(c.P + c.norm);
-        otherColors.push_back(sofa::helper::types::RGBAColor::white());
+        otherVertices.push_back(c.P + c.norm / 50.0);
+        otherColors.push_back(sofa::helper::types::RGBAColor(0.6,0.95,0.95,1));
 
         otherVertices.push_back(c.Q);
-        otherVertices.push_back(c.Q - c.norm);
+		otherVertices.push_back(c.Q - c.norm / 50.0);
         otherColors.push_back(sofa::helper::types::RGBAColor(0,0.5,0.5,1));
 
     }
