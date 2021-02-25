@@ -26,6 +26,9 @@
 #include <sofa/helper/ArgumentParser.h>
 #include <string>
 
+#include <QtCore/QObject>
+#include <QMainWindow>
+
 using sofa::helper::ArgumentParser;
 
 namespace sofa::gui
@@ -48,6 +51,9 @@ public:
     int mainLoop() override;
     void redraw() override;
     int closeGUI() override;
+
+	void playpauseGUI(bool value);
+	void switchPlaypauseGUI();
 
     static void setNumIterations(const std::string& nbIterInp) 
     {
@@ -94,6 +100,8 @@ protected:
     std::string filename;
     static signed int nbIter;
     static std::string nbIterInp;
+
+	bool m_animated;
 };
 
 } // namespace sofa::gui

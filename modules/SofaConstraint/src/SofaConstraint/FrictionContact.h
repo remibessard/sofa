@@ -69,6 +69,7 @@ protected:
     Data<double> tol; ///< tolerance for the constraints resolution (0 for default tolerance)
     std::vector< sofa::core::collision::DetectionOutput* > contacts;
     std::vector< std::pair< std::pair<int, int>, double > > mappedContacts;
+	Data<bool> sort;
 
     virtual void activateMappers();
 
