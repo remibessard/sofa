@@ -361,6 +361,9 @@ inline int LMDNewProximityIntersection::doIntersectionTrianglePoint(double dist2
 template<class T>
 bool LMDNewProximityIntersection::testIntersection(TSphere<T>& e1, Point& e2)
 {
+	if (!e1.isActive(e2.getCollisionModel()) || !e2.isActive(e1.getCollisionModel()))
+		return false;
+
     OutputVector contacts;
     const double alarmDist = getAlarmDistance() + e1.getProximity() + e2.getProximity() + e1.r();
 
@@ -374,6 +377,9 @@ bool LMDNewProximityIntersection::testIntersection(TSphere<T>& e1, Point& e2)
 template<class T>
 int LMDNewProximityIntersection::computeIntersection(TSphere<T>& e1, Point& e2, OutputVector* contacts)
 {
+	if (!e1.isActive(e2.getCollisionModel()) || !e2.isActive(e1.getCollisionModel()))
+		return false;
+
     const double alarmDist = getAlarmDistance() + e1.getProximity() + e2.getProximity() + e1.r();
 
     EmptyFilter emptyFilter;
@@ -395,6 +401,9 @@ int LMDNewProximityIntersection::computeIntersection(TSphere<T>& e1, Point& e2, 
 template<class T1, class T2>
 bool LMDNewProximityIntersection::testIntersection(TSphere<T1>& e1, TSphere<T2>& e2)
 {
+	if (!e1.isActive(e2.getCollisionModel()) || !e2.isActive(e1.getCollisionModel()))
+		return false;
+
     OutputVector contacts;
     const double alarmDist = getAlarmDistance() + e1.getProximity() + e2.getProximity() + e1.r() + e2.r();
     EmptyFilter emptyFilter;
@@ -407,6 +416,9 @@ bool LMDNewProximityIntersection::testIntersection(TSphere<T1>& e1, TSphere<T2>&
 template<class T1,class T2>
 int LMDNewProximityIntersection::computeIntersection(TSphere<T1>& e1, TSphere<T2>& e2, OutputVector* contacts)
 {
+	if (!e1.isActive(e2.getCollisionModel()) || !e2.isActive(e1.getCollisionModel()))
+		return false;
+
     const double alarmDist = getAlarmDistance() + e1.getProximity() + e2.getProximity() + e1.r() + e2.r();
     EmptyFilter emptyFilter;
 
@@ -434,6 +446,9 @@ bool LMDNewProximityIntersection::testIntersection(Line&, TSphere<T>&)
 template<class T>
 int LMDNewProximityIntersection::computeIntersection(Line& e1, TSphere<T>& e2, OutputVector* contacts)
 {
+	if (!e1.isActive(e2.getCollisionModel()) || !e2.isActive(e1.getCollisionModel()))
+		return false;
+
     const double alarmDist = getAlarmDistance() + e1.getProximity() + e2.getProximity() + e2.r();
     EmptyFilter emptyFilter;
     int id= e2.getIndex();
@@ -462,6 +477,8 @@ bool LMDNewProximityIntersection::testIntersection(Triangle&, TSphere<T>&)
 template<class T>
 int LMDNewProximityIntersection::computeIntersection(Triangle& e1, TSphere<T>& e2, OutputVector* contacts)
 {
+	if (!e1.isActive(e2.getCollisionModel()) || !e2.isActive(e1.getCollisionModel()))
+		return false;
 
 // index of lines:
     const auto& edgesInTriangle1 = e1.getCollisionModel()->getCollisionTopology()->getEdgesInTriangle(e1.getIndex());

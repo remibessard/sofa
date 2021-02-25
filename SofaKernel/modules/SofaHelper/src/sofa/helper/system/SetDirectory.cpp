@@ -65,8 +65,8 @@ SetDirectory::~SetDirectory()
 {
     if (!directory.empty() && !previousDir.empty())
     {
-        if (chdir(previousDir.c_str()) != 0)
-            msg_error("SetDirectory") << "can't change directory.";
+        //if (chdir(previousDir.c_str()) != 0)
+            //msg_error("SetDirectory") << "can't change directory.";
     }
 }
 

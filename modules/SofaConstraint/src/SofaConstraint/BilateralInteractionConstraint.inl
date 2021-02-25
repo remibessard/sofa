@@ -519,7 +519,7 @@ void BilateralInteractionConstraint<DataTypes>::draw(const core::visual::VisualP
     for (unsigned i=0; i<minp; i++)
     {
         vertices.push_back(DataTypes::getCPos(this->mstate1->read(ConstVecCoordId::position())->getValue()[m1.getValue()[i]]));
-        vertices.push_back(DataTypes::getCPos(this->mstate2->read(ConstVecCoordId::position())->getValue()[m1.getValue()[i]]));
+        vertices.push_back(DataTypes::getCPos(this->mstate2->read(ConstVecCoordId::position())->getValue()[m2.getValue()[i]]));
     }
 
     vparams->drawTool()->drawPoints(vertices, 10, (activated) ? colorActive : colorNotActive);

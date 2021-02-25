@@ -179,10 +179,10 @@ static std::string SigDescription(int sig)
 
 void BackTrace::sig(int sig)
 {
-    std::cerr << std::endl << "########## SIG " << sig << " - " << SigDescription(sig) << " ##########" << std::endl;
-    dump();
-    signal(sig,SIG_DFL);
-    raise(sig);
+    //std::cerr << std::endl << "########## SIG " << sig << " - " << SigDescription(sig) << " ##########" << std::endl;
+    //dump();
+    //signal(sig,SIG_DFL);
+    //raise(sig);
 }
 
 } // namespace helper

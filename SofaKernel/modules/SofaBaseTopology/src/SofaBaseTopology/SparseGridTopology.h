@@ -191,6 +191,7 @@ public:
 
     Data<bool> d_bOnlyInsideCells; ///< Select only inside cells (exclude boundary cells)
 
+	Data<bool> d_excludeInsideCells; /// < Exclude inside cells
 
 protected:
     bool isVirtual;
