@@ -41,6 +41,8 @@ namespace collision
  *  \brief Abstract description of a set of contact point.
  */
 
+//#define DETECTIONOUTPUT_BARYCENTRICINFO
+
 class DetectionOutputVector
 {
 protected:
@@ -90,7 +92,10 @@ public:
     Vector3 freePoint[2]; ///< free Point in contact on each element
 #endif
 
-    /// Normal of the contact, pointing outward from the first model
+	Vector3 baryCoords[2]; ///< provides the barycentric Coordinates (alpha, beta, gamma) of each contact points over the element
+	///< (alpha is used for lines / alpha and beta for triangles / alpha, beta and gamma for tetrahedrons)
+
+	/// Normal of the contact, pointing outward from the first model
     Vector3 normal;
     /*
     /// Signed distance (negative if objects are interpenetrating). If using a proximity-based detection, this is the actual distance between the objets minus the specified contact distance.
