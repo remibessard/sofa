@@ -115,6 +115,14 @@ public:
 
     void solve (const core::ExecParams* params, SReal dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult) override;
 
+
+	virtual void assemble(const core::ExecParams* params /* PARAMS FIRST */, double dt);
+
+	virtual void integrate(const core::ExecParams* params /* PARAMS FIRST */);
+
+	virtual void updateXandV(const core::ExecParams* params  /* PARAMS FIRST */, double dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult);
+
+
     /// Given a displacement as computed by the linear system inversion, how much will it affect the velocity
     ///
     /// This method is used to compute the compliance for contact corrections
@@ -158,6 +166,7 @@ protected:
 
     /// the solution vector is stored for warm-start
     core::behavior::MultiVecDeriv x;
+	core::behavior::MultiVecDeriv b;
 
 };
 

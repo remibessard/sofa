@@ -171,6 +171,8 @@ public:
     typedef typename MatrixLinearSolverInternalData<Vector>::JMatrixType JMatrixType;
     typedef typename MatrixLinearSolverInternalData<Vector>::ResMatrixType ResMatrixType;
 
+	Data<bool> multiGroup;
+
     MatrixLinearSolver();
     ~MatrixLinearSolver() override ;
 
@@ -228,6 +230,9 @@ public:
     /// Solve the system as constructed using the previous methods
     void solveSystem() override;
 
+	/// write system resolution in mstates
+	virtual void writeSolution();
+
     /// Invert the system, this method is optional because it's call when solveSystem() is called for the first time
     void invertSystem() override;
 
@@ -284,6 +289,35 @@ public:
     void applyConstraintForce(const sofa::core::ConstraintParams* cparams, sofa::core::MultiVecDerivId dx, const defaulttype::BaseVector* f) override;
 
     void computeResidual(const core::ExecParams* params, defaulttype::BaseVector* f) override;
+
+public :
+    bool isMultiGroup() const
+    {
+        return multiGroup.getValue();
+    }
+
+    virtual void createGroups(const core::MechanicalParams* mparams);
+
+    int getNbGroups() const
+    {
+        if (isMultiGroup()) return this->groups.size();
+        else return 1;
+    }
+
+    void setGroup(int i)
+    {
+        //serr << "setGroup("<<i<<")" << sendl;
+        if (isMultiGroup() && (unsigned)i < this->groups.size())
+        {
+            currentNode = groups[i];
+            currentGroup = &(gData[currentNode]);
+        }
+        else
+        {
+            currentNode = sofa::simulation::node::getNodeFrom(this->getContext());
+            currentGroup = &defaultGroup;
+        }
+    }
 
 public:
 
@@ -400,6 +434,9 @@ void MatrixLinearSolver<GraphScatteredMatrix,GraphScatteredVector,NoThreadManage
 
 template<> SOFA_SOFABASELINEARSOLVER_API
 void MatrixLinearSolver<GraphScatteredMatrix,GraphScatteredVector,NoThreadManager>::solveSystem();
+
+template<> SOFA_SOFABASELINEARSOLVER_API
+void MatrixLinearSolver<GraphScatteredMatrix, GraphScatteredVector, NoThreadManager>::writeSolution();
 
 template<> SOFA_SOFABASELINEARSOLVER_API
 GraphScatteredVector* MatrixLinearSolver<GraphScatteredMatrix,GraphScatteredVector,NoThreadManager>::createPersistentVector();

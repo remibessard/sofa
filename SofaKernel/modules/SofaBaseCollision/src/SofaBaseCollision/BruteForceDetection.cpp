@@ -163,7 +163,7 @@ void BruteForceDetection::addCollisionPair(const std::pair<core::CollisionModel*
     core::CollisionModel *finalcm1 = cm1->getLast();//get the finnest CollisionModel which is not a CubeModel
     core::CollisionModel *finalcm2 = cm2->getLast();
 
-    std::string msg = "BruteForceDetection addCollisionPair: " + finalcm1->getName() + " - " + finalcm2->getName();
+    std::string msg = "BFD addCollPair: " + finalcm1->getName() + " - " + finalcm2->getName();
     sofa::helper::ScopedAdvancedTimer bfTimer(msg);
     
     bool swapModels = false;

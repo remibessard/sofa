@@ -99,7 +99,8 @@ int BatchGUI::mainLoop()
         sofa::simulation::getSimulation()->animate(groot.get());
 
 		currentSimulation()->getContext()->setAnimate(false);
-        msg_info("BatchGUI") << "Processing." << sofa::helper::AdvancedTimer::end("Animate", groot.get()) << msgendl;
+		sofa::helper::AdvancedTimer::end("Animate");
+        msg_info("BatchGUI") << "Processing." << msgendl;
         sofa::simulation::Visitor::ctime_t rtfreq = sofa::helper::system::thread::CTime::getRefTicksPerSec();
         sofa::simulation::Visitor::ctime_t tfreq = sofa::helper::system::thread::CTime::getTicksPerSec();
         sofa::simulation::Visitor::ctime_t rt = sofa::helper::system::thread::CTime::getRefTime();

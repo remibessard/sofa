@@ -128,11 +128,36 @@ public:
         parent->m_setSystemMBKMatrix(m.getMFact(), m.getBFact(), m.getKFact());
     }
 
+	void setSystem(MultiVecDerivId solution, MultiVecDerivId rh)
+	{
+		parent->m_setSystemRHVector(rh);
+		parent->m_setSystemLHVector(solution);
+	}
+
+	void iterativeSolveSystem()
+	{
+		parent->m_iterativeSolveSystem();
+	}
+
+	void directSolveSystem()
+	{
+		parent->m_directSolveSystem();
+	}
+
+	void writeSolution()
+	{
+		parent->m_writeSolution();
+	}
+
     void solve(MultiVecDerivId solution, MultiVecDerivId rh)
     {
-        parent->m_setSystemRHVector(rh);
-        parent->m_setSystemLHVector(solution);
-        parent->m_solveSystem();
+		setSystem(solution, rh);
+		iterativeSolveSystem();
+		directSolveSystem();
+
+        //parent->m_setSystemRHVector(rh);
+        //parent->m_setSystemLHVector(solution);
+        //parent->m_solveSystem();
     }
 
     friend std::ostream& operator << (std::ostream& out, const MultiMatrix<Parent>& m )
