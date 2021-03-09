@@ -328,26 +328,30 @@ void MeshBarycentricMapperEngine<DataTypes>::addPointInTriangle(const Index tria
     {
         const sofa::core::topology::BaseMeshTopology::SeqTriangles& triangles = l_topology->getTriangles();
 
-        if (triangles.size() == 0)
-        {
-            return;
-        }
+        //if (triangles.size() == 0)
+        //{
+        //    return;
+        //}
 
-        auto linearInterpolIndices = sofa::helper::getWriteOnlyAccessor(d_interpolationIndices);
-        auto linearInterpolValues = sofa::helper::getWriteOnlyAccessor(d_interpolationValues);
+        //auto linearInterpolIndices = sofa::helper::getWriteOnlyAccessor(d_interpolationIndices);
+        //auto linearInterpolValues = sofa::helper::getWriteOnlyAccessor(d_interpolationValues);
+
+		if (linearInterpolIndices == NULL ||
+			linearInterpolValues == NULL || triangles.size() == 0)
+			return;
 
         // node0
-        linearInterpolIndices[pointIndex].push_back(triangles[triangleIndex][0]);
+		(*linearInterpolIndices)[pointIndex].push_back(triangles[triangleIndex][0]);
         Real value = Real(1.0) - Real(baryCoords[0]-baryCoords[1]);
-        linearInterpolValues[pointIndex].push_back(value);
+		(*linearInterpolValues)[pointIndex].push_back(value);
 
         // node1
-        linearInterpolIndices[pointIndex].push_back(triangles[triangleIndex][1]);
-        linearInterpolValues[pointIndex].push_back(Real(baryCoords[0]));
+        (*linearInterpolIndices)[pointIndex].push_back(triangles[triangleIndex][1]);
+        (*linearInterpolValues)[pointIndex].push_back(Real(baryCoords[0]));
 
         // node2
-        linearInterpolIndices[pointIndex].push_back(triangles[triangleIndex][2]);
-        linearInterpolValues[pointIndex].push_back(Real(baryCoords[1]));
+        (*linearInterpolIndices)[pointIndex].push_back(triangles[triangleIndex][2]);
+		(*linearInterpolValues)[pointIndex].push_back(Real(baryCoords[1]));
 
 
     }

@@ -113,55 +113,74 @@ bool LocalMinDistance::testIntersection(Line& e1, Line& e2)
         return false;
     }
 
-    const double alarmDist = getAlarmDistance() + e1.getProximity() + e2.getProximity();
+	const double alarmDist = getAlarmDistance() + e1.getProximity() + e2.getProximity();
 
-    const Vector3 AB = e1.p2()-e1.p1();
-    const Vector3 CD = e2.p2()-e2.p1();
-    const Vector3 AC = e2.p1()-e1.p1();
-    Matrix2 A;
-    Vector2 b;
+	const Vector3 AB = e1.p2() - e1.p1();
+	const Vector3 CD = e2.p2() - e2.p1();
+	const Vector3 AC = e2.p1() - e1.p1();
+	Matrix2 A;
+	Vector2 b;
 
-    A[0][0] = AB*AB;
-    A[1][1] = CD*CD;
-    A[0][1] = A[1][0] = -CD*AB;
-    b[0] = AB*AC;
-    b[1] = -CD*AC;
+	A[0][0] = AB * AB;
+	A[1][1] = CD * CD;
+	A[0][1] = A[1][0] = -CD * AB;
+	b[0] = AB * AC;
+	b[1] = -CD * AC;
 
-    const double det = defaulttype::determinant(A);
+	const double det = defaulttype::determinant(A);
 
-    double alpha = 0.5;
-    double beta = 0.5;
+	double alpha = 0.5;
+	double beta = 0.5;
 
-    if (det < -1.0e-30 || det > 1.0e-30)
-    {
-        alpha = (b[0]*A[1][1] - b[1]*A[0][1])/det;
-        beta  = (b[1]*A[0][0] - b[0]*A[1][0])/det;
-        if (alpha < 1e-15 || alpha > (1.0-1e-15) ||
-            beta  < 1e-15  || beta  > (1.0-1e-15) )
-            return false;
-    }
+	if (det < -1.0e-30 || det > 1.0e-30)
+	{
+		alpha = (b[0] * A[1][1] - b[1] * A[0][1]) / det;
+		beta = (b[1] * A[0][0] - b[0] * A[1][0]) / det;
+		if (alpha < 1e-15 || alpha >(1.0 - 1e-15) ||
+			beta  < 1e-15 || beta  >(1.0 - 1e-15))
+			return false;
+	}
 
-    Vector3 PQ = AC + CD * beta - AB * alpha;
+	Vector3 PQ = AC + CD * beta - AB * alpha;
 
-    if (PQ.norm2() < alarmDist*alarmDist)
-    {
-        // filter for LMD
+	if (PQ.norm2() < alarmDist*alarmDist)
+	{
+		// filter for LMD
 
-        if (!useLMDFilters.getValue())
-        {
-            if (!testValidity(e1, PQ))
-                return false;
+		if (!useLMDFilters.getValue())
+		{
+			if (!testValidity(e1, PQ))
+				return false;
 
-            Vector3 QP = -PQ;
-            return testValidity(e2, QP);
-        }
-        else
-        {
-            return true;
-        }
-    }
-    else
-        return false;
+			Vector3 QP = -PQ;
+			return testValidity(e2, QP);
+		}
+		else
+		{
+			/*
+			core::collision::ContactFiltrationAlgorithm *e1_cfa = e1.getCollisionModel()->getContactFiltrationAlgorithm();
+			if (e1_cfa != 0)
+			{
+				if (!e1_cfa->validate(e1, PQ))
+					return false;
+			}
+
+			core::collision::ContactFiltrationAlgorithm *e2_cfa = e2.getCollisionModel()->getContactFiltrationAlgorithm();
+			if (e2_cfa != 0)
+			{
+				Vector3 QP = -PQ;
+				return e2_cfa->validate(e2, QP);
+			}
+			*/
+
+			return true;
+		}
+
+		// end filter
+
+	}
+	else
+		return false;
 }
 
 int LocalMinDistance::computeIntersection(Line& e1, Line& e2, OutputVector* contacts)
@@ -1329,7 +1348,7 @@ bool LocalMinDistance::testValidity(Line &l, const Vector3 &PQ)
         return true;
 
     LineCollisionModel<sofa::defaulttype::Vec3Types> *lM = l.getCollisionModel();
-    bool bothSide_computation = lM->bothSide.getValue();
+    const bool bothSide_computation = lM->bothSide.getValue();
 
     Vector3 nMean;
     Vector3 n1, n2;

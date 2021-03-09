@@ -80,7 +80,7 @@ int MeshNewProximityIntersection::computeIntersection(Point& e1, Point& e2, Outp
 int MeshNewProximityIntersection::computeIntersection(Line& e1, Point& e2, OutputVector* contacts)
 {
     const SReal alarmDist = intersection->getAlarmDistance() + e1.getProximity() + e2.getProximity();
-    int n = doIntersectionLinePoint(alarmDist*alarmDist, e1.p1(),e1.p2(), e2.p(), contacts, e2.getIndex());
+    int n = doBarycentricIntersectionLinePoint(alarmDist*alarmDist, e1.p1(),e1.p2(), Vector3(0,0,0), e2.p(), contacts, e2.getIndex());
     if (n>0)
     {
         const SReal contactDist = intersection->getContactDistance() + e1.getProximity() + e2.getProximity();
@@ -132,34 +132,34 @@ int MeshNewProximityIntersection::computeIntersection(Triangle& e1, Point& e2, O
 
 int MeshNewProximityIntersection::computeIntersection(Triangle& e1, Line& e2, OutputVector* contacts)
 {
-    const SReal alarmDist = intersection->getAlarmDistance() + e1.getProximity() + e2.getProximity();
-    const SReal    dist2 = alarmDist*alarmDist;
-    const Vector3& p1 = e1.p1();
-    const Vector3& p2 = e1.p2();
-    const Vector3& p3 = e1.p3();
-    const Vector3& pn = e1.n();
-    const Vector3& q1 = e2.p1();
-    const Vector3& q2 = e2.p2();
+	const SReal alarmDist = intersection->getAlarmDistance() + e1.getProximity() + e2.getProximity();
+	const SReal    dist2 = alarmDist * alarmDist;
+	const Vector3& p1 = e1.p1();
+	const Vector3& p2 = e1.p2();
+	const Vector3& p3 = e1.p3();
+	//const Vector3& pn = e1.n();
+	const Vector3& q1 = e2.p1();
+	const Vector3& q2 = e2.p2();
 
-    const int f1 = e1.flags();
+	const int f1 = e1.flags();
 
-    int n = 0;
+	int n = 0;
 
     if (f1&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P1)
     {
-        n += doIntersectionLinePoint(dist2, q1, q2, p1, contacts, e2.getIndex(), true);
+        n += doBarycentricIntersectionLinePoint(dist2, q1, q2, Vector3(0, 0, 0), p1, contacts, e2.getIndex(), true);
     }
     if (f1&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P2)
     {
-        n += doIntersectionLinePoint(dist2, q1, q2, p2, contacts, e2.getIndex(), true);
+        n += doBarycentricIntersectionLinePoint(dist2, q1, q2, Vector3(1, 0, 0), p2, contacts, e2.getIndex(), true);
     }
     if (f1&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P3)
     {
-        n += doIntersectionLinePoint(dist2, q1, q2, p3, contacts, e2.getIndex(), true);
+        n += doBarycentricIntersectionLinePoint(dist2, q1, q2, Vector3(0, 1, 0), p3, contacts, e2.getIndex(), true);
     }
 
-    n += doIntersectionTrianglePoint(dist2, f1, p1, p2, p3, pn, q1, contacts, e2.getIndex(), false);
-    n += doIntersectionTrianglePoint(dist2, f1, p1, p2, p3, pn, q2, contacts, e2.getIndex(), false);
+    n += doIntersectionTrianglePoint(dist2, f1, p1, p2, p3, Vector3(0, 0, 0), q1, contacts, e2.getIndex(), false);
+    n += doIntersectionTrianglePoint(dist2, f1, p1, p2, p3, Vector3(1, 0, 0), q2, contacts, e2.getIndex(), false);
 
     if (intersection->useLineLine.getValue())
     {
@@ -212,15 +212,15 @@ int MeshNewProximityIntersection::computeIntersection(Triangle& e1, Triangle& e2
     const Vector3& p1 = e1.p1();
     const Vector3& p2 = e1.p2();
     const Vector3& p3 = e1.p3();
-    Vector3& pn = e1.n();
+    //Vector3& pn = e1.n();
     const Vector3& q1 = e2.p1();
     const Vector3& q2 = e2.p2();
     const Vector3& q3 = e2.p3();
-    Vector3& qn = e2.n();
+    //Vector3& qn = e2.n();
 
     
-    if(neighbor)
-        return 0;
+    //if(neighbor)
+    //    return 0;
 
     const int f1 = e1.flags();
     const int f2 = e2.flags();
@@ -228,64 +228,65 @@ int MeshNewProximityIntersection::computeIntersection(Triangle& e1, Triangle& e2
     const Index id1 = e1.getIndex()*3; // index of contacts involving points in e1
     const Index id2 = e1.getCollisionModel()->getSize()*3 + e2.getIndex()*12; // index of contacts involving points in e2
 
-    bool useNormal = true;
-    bool bothSide1 = e1.getCollisionModel()->d_bothSide.getValue();
-    bool bothSide2 = e2.getCollisionModel()->d_bothSide.getValue();
+    //bool useNormal = true;
+    //bool bothSide1 = e1.getCollisionModel()->d_bothSide.getValue();
+    //bool bothSide2 = e2.getCollisionModel()->d_bothSide.getValue();
 
 
-    if(bothSide1 && bothSide2)
-        useNormal=false;
-    else
-        if(!bothSide1)
-            qn = -pn;
-        else
-            if(!bothSide2) 
-                pn = -qn;
+    //if(bothSide1 && bothSide2)
+    //    useNormal=false;
+    //else
+    //    if(!bothSide1)
+    //        qn = -pn;
+    //    else
+    //        if(!bothSide2) 
+    //            pn = -qn;
 
     int n = 0;
-        n += doIntersectionTrianglePoint(dist2, f2, q1, q2, q3, qn, p1, contacts, id1+0, true, useNormal);
+	if (f1&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P1)
+        n += doIntersectionTrianglePoint(dist2, f2, q1, q2, q3, Vector3(0, 0, 0), p1, contacts, id1+0, true);
     if (f1&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P2)
-        n += doIntersectionTrianglePoint(dist2, f2, q1, q2, q3, qn, p2, contacts, id1+1, true, useNormal);
+        n += doIntersectionTrianglePoint(dist2, f2, q1, q2, q3, Vector3(1, 0, 0), p2, contacts, id1+1, true);
     if (f1&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P3)
-        n += doIntersectionTrianglePoint(dist2, f2, q1, q2, q3, qn, p3, contacts, id1+2, true, useNormal);
+        n += doIntersectionTrianglePoint(dist2, f2, q1, q2, q3, Vector3(0, 1, 0), p3, contacts, id1+2, true);
 
     if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P1)
-        n += doIntersectionTrianglePoint(dist2, f1, p1, p2, p3, pn, q1, contacts, id2+0, false, useNormal);
+        n += doIntersectionTrianglePoint(dist2, f1, p1, p2, p3, Vector3(0, 0, 0), q1, contacts, id2+0, false);
     if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P2)
-        n += doIntersectionTrianglePoint(dist2, f1, p1, p2, p3, pn, q2, contacts, id2+1, false, useNormal);
+        n += doIntersectionTrianglePoint(dist2, f1, p1, p2, p3, Vector3(1, 0, 0), q2, contacts, id2+1, false);
     if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P3)
-        n += doIntersectionTrianglePoint(dist2, f1, p1, p2, p3, pn, q3, contacts, id2+2, false, useNormal);
+        n += doIntersectionTrianglePoint(dist2, f1, p1, p2, p3, Vector3(0, 1, 0), q3, contacts, id2+2, false);
 
     if (intersection->useLineLine.getValue())
     {
         if (f1&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E12)
         {
             if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E12)
-                n += doIntersectionLineLine(dist2, p1, p2, q1, q2, contacts, id2+3, pn, useNormal);
+                n += doIntersectionLineLine(dist2, p1, p2, q1, q2, contacts, id2+3);
             if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E23)
-                n += doIntersectionLineLine(dist2, p1, p2, q2, q3, contacts, id2+4, pn, useNormal);
+                n += doIntersectionLineLine(dist2, p1, p2, q2, q3, contacts, id2+4);
             if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E31)
-                n += doIntersectionLineLine(dist2, p1, p2, q3, q1, contacts, id2+5, pn, useNormal);
+                n += doIntersectionLineLine(dist2, p1, p2, q3, q1, contacts, id2+5);
         }
 
         if (f1&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E23)
         {
             if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E12)
-                n += doIntersectionLineLine(dist2, p2, p3, q1, q2, contacts, id2+6, pn, useNormal);
+                n += doIntersectionLineLine(dist2, p2, p3, q1, q2, contacts, id2+6);
             if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E23)
-                n += doIntersectionLineLine(dist2, p2, p3, q2, q3, contacts, id2+7, pn, useNormal);
+                n += doIntersectionLineLine(dist2, p2, p3, q2, q3, contacts, id2+7);
             if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E31)
-                n += doIntersectionLineLine(dist2, p2, p3, q3, q1, contacts, id2+8, pn, useNormal);
+                n += doIntersectionLineLine(dist2, p2, p3, q3, q1, contacts, id2+8);
         }
 
         if (f1&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E31)
         {
             if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E12)
-                n += doIntersectionLineLine(dist2, p3, p1, q1, q2, contacts, id2+9, pn, useNormal);
+                n += doIntersectionLineLine(dist2, p3, p1, q1, q2, contacts, id2+9);
             if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E23)
-                n += doIntersectionLineLine(dist2, p3, p1, q2, q3, contacts, id2+10, pn, useNormal);
+                n += doIntersectionLineLine(dist2, p3, p1, q2, q3, contacts, id2+10);
             if (f2&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E31)
-                n += doIntersectionLineLine(dist2, p3, p1, q3, q1, contacts, id2+11, pn, useNormal);
+                n += doIntersectionLineLine(dist2, p3, p1, q3, q1, contacts, id2+11);
         }
     }
 

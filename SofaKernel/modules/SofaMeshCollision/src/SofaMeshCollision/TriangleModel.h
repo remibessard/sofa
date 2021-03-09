@@ -118,18 +118,24 @@ public:
 
     enum TriangleFlag
     {
-        FLAG_P1  = 1<<0, ///< Point 1  is attached to this triangle
-        FLAG_P2  = 1<<1, ///< Point 2  is attached to this triangle
-        FLAG_P3  = 1<<2, ///< Point 3  is attached to this triangle
-        FLAG_E23 = 1<<3, ///< Edge 2-3 is attached to this triangle
-        FLAG_E31 = 1<<4, ///< Edge 3-1 is attached to this triangle
-        FLAG_E12 = 1<<5, ///< Edge 1-2 is attached to this triangle
-        FLAG_BE23 = 1<<6, ///< Edge 2-3 is attached to this triangle and is a boundary
-        FLAG_BE31 = 1<<7, ///< Edge 3-1 is attached to this triangle and is a boundary
-        FLAG_BE12 = 1<<8, ///< Edge 1-2 is attached to this triangle and is a boundary
-        FLAG_POINTS  = FLAG_P1|FLAG_P2|FLAG_P3,
-        FLAG_EDGES   = FLAG_E12|FLAG_E23|FLAG_E31,
-        FLAG_BEDGES  = FLAG_BE12|FLAG_BE23|FLAG_BE31,
+		FLAG_P1 = 1 << 0,  ///< Point 1  is attached to this triangle
+		FLAG_P2 = 1 << 1,  ///< Point 2  is attached to this triangle
+		FLAG_P3 = 1 << 2,  ///< Point 3  is attached to this triangle
+		FLAG_BP1 = 1 << 3,  ///< Point 1  is attached to this triangle and is a boundary
+		FLAG_BP2 = 1 << 4,  ///< Point 2  is attached to this triangle and is a boundary
+		FLAG_BP3 = 1 << 5,  ///< Point 3  is attached to this triangle and is a boundary
+		FLAG_E23 = 1 << 6,  ///< Edge 2-3 is attached to this triangle
+		FLAG_E31 = 1 << 7,  ///< Edge 3-1 is attached to this triangle
+		FLAG_E12 = 1 << 8,  ///< Edge 1-2 is attached to this triangle
+		FLAG_BE23 = 1 << 9,  ///< Edge 2-3 is attached to this triangle and is a boundary
+		FLAG_BE31 = 1 << 10, ///< Edge 3-1 is attached to this triangle and is a boundary
+		FLAG_BE12 = 1 << 11, ///< Edge 1-2 is attached to this triangle and is a boundary
+		FLAG_BADSHAPE = 1 << 12, ///< Triangle has a bad shape and should be ignored
+		FLAG_FIRST_CUSTOM = 1 << 13,
+		FLAG_POINTS = FLAG_P1 | FLAG_P2 | FLAG_P3,
+		FLAG_EDGES = FLAG_E12 | FLAG_E23 | FLAG_E31,
+		FLAG_BPOINTS = FLAG_BP1 | FLAG_BP2 | FLAG_BP3,
+		FLAG_BEDGES = FLAG_BE12 | FLAG_BE23 | FLAG_BE31,
     };
 
 	enum { NBARY = 2 };
@@ -163,6 +169,9 @@ protected:
 
     TriangleLocalMinDistanceFilter *m_lmdFilter;
 
+	sofa::helper::vector<int> m_triangleFlags;
+
+
 protected:
 
     TriangleCollisionModel();
@@ -180,6 +189,8 @@ public:
     void computeBoundingTree(int maxDepth=0) override;
 
     void computeContinuousBoundingTree(double dt, int maxDepth=0) override;
+
+	void computeTrianglesFlags();
 
     void draw(const core::visual::VisualParams*, Index index) override;
 
