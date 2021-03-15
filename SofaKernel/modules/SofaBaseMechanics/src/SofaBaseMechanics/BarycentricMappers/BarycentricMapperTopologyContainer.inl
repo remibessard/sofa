@@ -270,6 +270,8 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::applyJT
 template <class In, class Out, class MappingDataType, class Element>
 const defaulttype::BaseMatrix* BarycentricMapperTopologyContainer<In,Out,MappingDataType, Element>::getJ(int outSize, int inSize)
 {
+	return nullptr;
+#if 0
     if (m_matrixJ && !m_updateJ)
         return m_matrixJ;
 
@@ -295,6 +297,7 @@ const defaulttype::BaseMatrix* BarycentricMapperTopologyContainer<In,Out,Mapping
     m_matrixJ->compress();
     m_updateJ = false;
     return m_matrixJ;
+#endif
 }
 
 

@@ -48,12 +48,12 @@ BarycentricMapperSparseGridTopology<In, Out>::~BarycentricMapperSparseGridTopolo
         delete m_matrixJ;
 }
 
-template<class In, class Out>
-void BarycentricMapperSparseGridTopology<In, Out>::addMatrixContrib(MatrixType* m,
-                                                                    int row, int col, Real value)
-{
-    Inherit1::addMatrixContrib(m, row, col, value);
-}
+//template<class In, class Out>
+//void BarycentricMapperSparseGridTopology<In, Out>::addMatrixContrib(MatrixType* m,
+//                                                                    int row, int col, Real value)
+//{
+//    Inherit1::addMatrixContrib(m, row, col, value);
+//}
 
 
 
@@ -154,7 +154,9 @@ void BarycentricMapperSparseGridTopology<In,Out>::draw  (const VisualParams* vpa
 template <class In, class Out>
 const sofa::defaulttype::BaseMatrix* BarycentricMapperSparseGridTopology<In,Out>::getJ(int outSize, int inSize)
 {
-    if (m_matrixJ && !m_updateJ)
+	return nullptr;
+#if 0
+	if (m_matrixJ && !m_updateJ)
         return m_matrixJ;
 
     if (!m_matrixJ) m_matrixJ = new MatrixType;
@@ -187,6 +189,7 @@ const sofa::defaulttype::BaseMatrix* BarycentricMapperSparseGridTopology<In,Out>
     m_matrixJ->compress();
     m_updateJ = false;
     return m_matrixJ;
+#endif
 }
 
 

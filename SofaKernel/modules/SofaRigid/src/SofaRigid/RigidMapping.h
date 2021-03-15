@@ -147,7 +147,7 @@ protected:
 
     void load(const char* filename);
     const VecCoord& getPoints();
-    void setJMatrixBlock(sofa::Index outIdx, sofa::Index inIdx);
+    //void setJMatrixBlock(sofa::Index outIdx, sofa::Index inIdx);
 
     std::unique_ptr<MatrixType> matrixJ;
     bool updateJ;

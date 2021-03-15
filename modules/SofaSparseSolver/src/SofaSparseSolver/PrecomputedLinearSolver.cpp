@@ -36,10 +36,10 @@ using namespace sofa::component::odesolver;
 using namespace sofa::component::linearsolver;
 
 int PrecomputedLinearSolverClass = core::RegisterObject("Linear system solver based on a precomputed inverse matrix")
-        .add< PrecomputedLinearSolver< CompressedRowSparseMatrix<double> , FullVector<double> > >()
+        .add< PrecomputedLinearSolver< CompressedRowSparseMatrixMechanical<double> , FullVector<double> > >()
         ;
 
-template class SOFA_SOFASPARSESOLVER_API PrecomputedLinearSolver< CompressedRowSparseMatrix<double> , FullVector<double> >;
+template class SOFA_SOFASPARSESOLVER_API PrecomputedLinearSolver< CompressedRowSparseMatrixMechanical<double> , FullVector<double> >;
 
 } // namespace linearsolver
 

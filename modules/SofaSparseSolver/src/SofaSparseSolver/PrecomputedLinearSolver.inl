@@ -45,7 +45,7 @@
 #include <SofaSparseSolver/SparseCholeskySolver.h>
 #endif
 
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
+#include <SofaBaseLinearSolver/CompressedRowSparseMatrixMechanical.h>
 #include <SofaGeneralLinearSolver/CholeskySolver.h>
 
 namespace sofa
@@ -125,7 +125,7 @@ void PrecomputedLinearSolver<TMatrix,TVector>::loadMatrixWithCSparse(TMatrix& M)
 {
     msg_info("PrecomputedLinearSolver") << "Compute the initial invert matrix with CS_PARSE" ;
 
-    CompressedRowSparseMatrix<double> matSolv;
+    CompressedRowSparseMatrixMechanical<double> matSolv;
     FullVector<double> r;
     FullVector<double> b;
 
@@ -134,7 +134,7 @@ void PrecomputedLinearSolver<TMatrix,TVector>::loadMatrixWithCSparse(TMatrix& M)
     matSolv.resize(systemSize,systemSize);
     r.resize(systemSize);
     b.resize(systemSize);
-    SparseCholeskySolver<CompressedRowSparseMatrix<double>, FullVector<double> > solver;
+    SparseCholeskySolver<CompressedRowSparseMatrixMechanical<double>, FullVector<double> > solver;
 
     for (unsigned int j=0; j<systemSize; j++)
     {

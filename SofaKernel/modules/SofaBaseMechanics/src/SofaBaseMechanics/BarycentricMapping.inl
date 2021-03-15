@@ -488,6 +488,8 @@ void BarycentricMapperTriangleSetTopology<In,Out>::handleTopologyChange(core::to
 template<class TIn, class TOut>
 const helper::vector< defaulttype::BaseMatrix*>* BarycentricMapping<TIn, TOut>::getJs()
 {
+	return nullptr;
+#if 0
     typedef typename Mapper::MatrixType mat_type;
     const sofa::defaulttype::BaseMatrix* matJ = getJ();
 
@@ -500,6 +502,7 @@ const helper::vector< defaulttype::BaseMatrix*>* BarycentricMapping<TIn, TOut>::
     js.resize( 1 );
     js[0] = internalMatrix;
     return &js;
+#endif
 }
 
 template <class TIn, class TOut>

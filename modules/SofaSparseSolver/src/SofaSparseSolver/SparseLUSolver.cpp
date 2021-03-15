@@ -28,7 +28,7 @@
 #include <sofa/core/behavior/LinearSolver.h>
 #include <cmath>
 #include <sofa/helper/system/thread/CTime.h>
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
+#include <SofaBaseLinearSolver/CompressedRowSparseMatrixMechanical.h>
 
 namespace sofa
 {
@@ -40,7 +40,7 @@ namespace linearsolver
 {
 
 int SparseLUSolverClass = core::RegisterObject("Direct linear solver based on Sparse LU factorization, implemented with the CSPARSE library")
-        .add< SparseLUSolver< CompressedRowSparseMatrix<double>,FullVector<double> > >()
+        .add< SparseLUSolver< CompressedRowSparseMatrixMechanical<double>,FullVector<double> > >()
         ;
 
 } // namespace linearsolver

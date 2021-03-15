@@ -325,7 +325,7 @@ class BlockDiagonalMatrix : public defaulttype::BaseMatrix
 public:
     typedef T Real;
     typedef defaulttype::Mat<LC,LC,Real> Bloc;
-    typedef matrix_bloc_traits<Bloc, Index> traits;
+    typedef matrix_bloc_traits<Bloc> traits;
 
     enum { BSIZE = LC };
 
@@ -412,7 +412,7 @@ public:
     void set(Index i, Index j, double v) override
     {
         Index bi=0, bj=0; traits::split_row_index(i, bi); traits::split_col_index(j, bj);
-        if (i == j) traits::v(data[i], bi, bj) = (Real)v;
+        if (i == j) traits::vset(data[i], bi, bj, (Real)v);
     }
 
     void setB(Index i, const Bloc& b)
@@ -429,7 +429,8 @@ public:
     void add(Index i, Index j, double v) override
     {
         Index bi=0, bj=0; traits::split_row_index(i, bi); traits::split_col_index(j, bj);
-        if (i == j) traits::v(data[i], bi, bj) += (Real)v;
+        if (i == j) traits::vadd(data[i], bi, bj, (Real)v);
+
     }
 
     void addB(Index i, const Bloc& b)
@@ -443,33 +444,33 @@ public:
             addB(i, b);
     }
 
-    void clear(Index i, Index j) override
+    void clear(Index i, Index j)
     {
         Index bi=0, bj=0; traits::split_row_index(i, bi); traits::split_col_index(j, bj);
-        if (i == j) traits::v(data[i], bi, bj) = (Real)0;
+        if (i == j) traits::vset(data[i], bi, bj, (Real)0);
     }
 
-    void clearRow(Index i) override
+    void clearRow(Index i)
     {
         Index bi=0; traits::split_row_index(i, bi);
-        for (Index bj=0; bj<Index(LC); ++bj)
-            traits::v(data[i], bi, bj) = (Real)0;
+        for (Index bj=0; bj < LC; ++bj)
+            traits::vset(data[i], bi, bj, (Real)0);
     }
 
-    void clearCol(Index j) override
+    void clearCol(Index j)
     {
         Index bj=0; traits::split_col_index(j, bj);
-        for (Index bi=0; bi<Index(LC); ++bi)
-            traits::v(data[j], bi, bj) = (Real)0;
+        for (Index bi=0; bi < LC; ++bi)
+            traits::vset(data[j], bi, bj, (Real)0);
     }
 
-    void clearRowCol(Index i) override
+    void clearRowCol(Index i)
     {
         Index bi=0; traits::split_row_index(i, bi);
-        for (Index bj=0; bj<Index(LC); ++bj)
-            traits::v(data[i], bi, bj) = (Real)0;
-        for (Index bj=0; bj<Index(LC); ++bj)
-            traits::v(data[i], bj, bi) = (Real)0;
+        for (Index bj=0; bj < LC; ++bj)
+            traits::vset(data[i], bi, bj, (Real)0);
+        for (Index bj=0; bj < LC; ++bj)
+            traits::vset(data[i], bj, bi, (Real)0);
     }
 
     void clear() override

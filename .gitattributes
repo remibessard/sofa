@@ -24,3 +24,7 @@
 ## Scripts
 *.sh text
 *.awk text
+
+*.cpp filter=tabspace
+*.h filter=tabspace
+*.inl filter=tabspace

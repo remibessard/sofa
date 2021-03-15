@@ -15,13 +15,15 @@ set(SOURCE_FILES
 list(APPEND HEADER_FILES
     ${SOFAGENERALANIMATIONLOOP_SRC}/MultiStepAnimationLoop.h
     ${SOFAGENERALANIMATIONLOOP_SRC}/MultiTagAnimationLoop.h
-    ${SOFAGENERALANIMATIONLOOP_SRC}/MechanicalMatrixMapper.h
-    ${SOFAGENERALANIMATIONLOOP_SRC}/MechanicalMatrixMapper.inl)
+#    ${SOFAGENERALANIMATIONLOOP_SRC}/MechanicalMatrixMapper.h
+#    ${SOFAGENERALANIMATIONLOOP_SRC}/MechanicalMatrixMapper.inl
+)
 
 list(APPEND SOURCE_FILES
     ${SOFAGENERALANIMATIONLOOP_SRC}/MultiStepAnimationLoop.cpp
     ${SOFAGENERALANIMATIONLOOP_SRC}/MultiTagAnimationLoop.cpp
-    ${SOFAGENERALANIMATIONLOOP_SRC}/MechanicalMatrixMapper.cpp)
+#    ${SOFAGENERALANIMATIONLOOP_SRC}/MechanicalMatrixMapper.cpp
+)
 
 find_package(SofaBase REQUIRED) # SofaBaseLinearSolver
 

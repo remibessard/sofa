@@ -27,7 +27,7 @@
 #include <sofa/simulation/MechanicalVisitor.h>
 #include <SofaBaseLinearSolver/FullMatrix.h>
 #include <SofaBaseLinearSolver/SparseMatrix.h>
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
+#include <SofaBaseLinearSolver/CompressedRowSparseMatrixMechanical.h>
 #include <sofa/helper/map.h>
 #include <cmath>
 #include <SofaSparseSolver/SparseLDLSolverImpl.h>
@@ -76,12 +76,12 @@ protected :
 
 	helper::vector<int> Jlocal2global;
     FullMatrix<Real> Jminv,Jdense;
-    sofa::component::linearsolver::CompressedRowSparseMatrix<Real> Mfiltered;
+    sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<Real> Mfiltered;
 };
 
 #if  !defined(SOFA_COMPONENT_LINEARSOLVER_SPARSELDLSOLVER_CPP)
-extern template class SOFA_SOFASPARSESOLVER_API SparseLDLSolver< CompressedRowSparseMatrix< double>,FullVector<double> >;
-extern template class SOFA_SOFASPARSESOLVER_API SparseLDLSolver< CompressedRowSparseMatrix< defaulttype::Mat<3,3,double> >,FullVector<double> >;
+extern template class SOFA_SOFASPARSESOLVER_API SparseLDLSolver< CompressedRowSparseMatrixMechanical< double>,FullVector<double> >;
+extern template class SOFA_SOFASPARSESOLVER_API SparseLDLSolver< CompressedRowSparseMatrixMechanical< defaulttype::Mat<3,3,double> >,FullVector<double> >;
 
 #endif
 

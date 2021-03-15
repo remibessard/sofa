@@ -290,6 +290,8 @@ void SubsetMapping<TIn, TOut>::applyJT ( const core::ConstraintParams * /*cparam
 template<class TIn, class TOut>
 const sofa::defaulttype::BaseMatrix* SubsetMapping<TIn, TOut>::getJ()
 {
+	return nullptr;
+#if 0
     if (matrixJ.get() == 0 || updateJ)
     {
         const OutVecCoord& out =this->toModel->read(core::ConstVecCoordId::position())->getValue();
@@ -319,6 +321,7 @@ const sofa::defaulttype::BaseMatrix* SubsetMapping<TIn, TOut>::getJ()
         }
     }
     return matrixJ.get();
+#endif
 }
 
 

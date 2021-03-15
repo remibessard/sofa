@@ -22,7 +22,7 @@
 #pragma once
 #include <SofaBaseLinearSolver/config.h>
 
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
+#include <SofaBaseLinearSolver/CompressedRowSparseMatrixMechanical.h>
 #include <sofa/core/behavior/MultiMatrixAccessor.h>
 
 
@@ -36,73 +36,237 @@ class BlocMatrixWriter
 {
 public:
     typedef TBloc Bloc;
-    typedef matrix_bloc_traits<Bloc, defaulttype::BaseMatrix::Index> traits;
+    typedef matrix_bloc_traits<Bloc> traits;
     typedef typename traits::Real Real;
     enum { NL = traits::NL };
     enum { NC = traits::NC };
 
     typedef Bloc MatBloc;
 
-    class BaseMatrixWriter
-    {
-        defaulttype::BaseMatrix* m;
-        unsigned int offsetL, offsetC;
-    public:
-        BaseMatrixWriter(defaulttype::BaseMatrix* m, unsigned int offsetL, unsigned int offsetC) : m(m), offsetL(offsetL), offsetC(offsetC) {}
-        void add(unsigned int bi, unsigned int bj, const MatBloc& b)
-        {
-            unsigned int i0 = offsetL + bi*NL;
-            unsigned int j0 = offsetC + bj*NC;
-            for (unsigned int i=0; i<NL; ++i)
-                for (unsigned int j=0; j<NC; ++j)
-                    m->add(i0+i,j0+j,b[i][j]);
-        }
-    };
+    typedef sofa::defaulttype::Vec<NL,Real> DBloc;
 
-    class BlocBaseMatrixWriter
-    {
-        defaulttype::BaseMatrix* m;
-        unsigned int boffsetL, boffsetC;
-    public:
-        BlocBaseMatrixWriter(defaulttype::BaseMatrix* m, unsigned int boffsetL, unsigned int boffsetC) : m(m), boffsetL(boffsetL), boffsetC(boffsetC) {}
-        void add(unsigned int bi, unsigned int bj, const MatBloc& b)
-        {
-            unsigned int i0 = boffsetL + bi;
-            unsigned int j0 = boffsetC + bj;
-            m->blocAdd(i0,j0,b.ptr());
-        }
-    };
-
-    template<class MReal>
+    template<class MReal, class TPolicy = sofa::component::linearsolver::CRSMechanicalPolicy >
     class BlocCRSMatrixWriter
     {
-        sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<NL,NC,MReal> >* m;
-        unsigned int boffsetL, boffsetC;
+        sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL,NC,MReal>, TPolicy >* m;
+        const unsigned int boffsetL, boffsetC;
     public:
-        BlocCRSMatrixWriter(sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<NL,NC,MReal> >* m, unsigned int boffsetL, unsigned int boffsetC) : m(m), boffsetL(boffsetL), boffsetC(boffsetC) {}
+        BlocCRSMatrixWriter(sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL,NC,MReal>, TPolicy >* m, unsigned int boffsetL, unsigned int boffsetC) : m(m), boffsetL(boffsetL), boffsetC(boffsetC) {}
         void add(unsigned int bi, unsigned int bj, const MatBloc& b)
         {
-            unsigned int i0 = boffsetL + bi;
-            unsigned int j0 = boffsetC + bj;
-            //defaulttype::Mat<NL,NC,MReal> bconv = b;
-            *m->wbloc(i0,j0,true) += b;
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bj;
+            m->add(i, j, b);
+        }
+        void add(unsigned int bi, unsigned int bj, int& rowId, int& colId, const MatBloc& b)
+        {
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bj;
+            m->add(i, j, rowId, colId, b);
+        }
+        void addDBloc(unsigned int bi, unsigned int bj, const DBloc& b)
+        {
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bj;
+            m->addDBloc(i, j, b);
+        }
+        void addDValue(unsigned int bi, unsigned int bj, const Real b)
+        {
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bj;
+            m->addDValue(i, j, b);
+        }
+         void addDValue(unsigned int bi, unsigned int bj, int& rowId, int& colId, const Real b)
+        {
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bj;
+            m->addDValue(i, j, rowId, colId, b);
+        }
+        void addDiag(unsigned int bi, const MatBloc& b)
+        {
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bi;
+            if (i == j)
+            {
+                m->addDiag(i, b);
+            }
+            else
+            {
+                m->add(i, j, b);
+            }
+        }
+        void addDiag(unsigned int bi, int& rowId, int& colId, const MatBloc &b)
+        {
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bi;
+            if (i == j)
+            {
+                m->addDiag(i, b);
+            }
+            else
+            {
+                m->add(i, j, rowId, colId, b);
+            }
+        }
+        void addDiagDBloc(unsigned int bi, const DBloc& b)
+        {
+            addDBloc(bi, bi, b);
+        }
+        void addDiagDValue(unsigned int bi, const Real b)
+        {
+            addDValue(bi, bi, b);
+        }
+        void addDiagDValue(unsigned int bi, int& rowId, int& colId, const Real b)
+        {
+            addDValue(bi, bi, rowId, colId, b);
+        }
+        void addSym(unsigned int bi, unsigned int bj, const MatBloc& b)
+        {
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bj;
+            m->addSym(i, j, b);
+        }
+        void addSym(unsigned int bi, unsigned int bj, int& rowId, int& colId, int& rowIdT, int& colIdT, const MatBloc &b)
+        {
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bj;
+            m->addSym(i, j, rowId, colId, rowIdT, colIdT, b);
+        }
+        void addSymDBloc(unsigned int bi, unsigned int bj, const DBloc& b)
+        {
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bj;
+            m->addSymDBloc(i, j, b);
+        }
+        void addSymDValue(unsigned int bi, unsigned int bj, const Real b)
+        {
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bj;
+            m->addSymDValue(i, j, b);
+        }
+        void addSymDValue(unsigned int bi, unsigned int bj, int& rowId, int& colId, int& rowIdT, int& colIdT, Real b)
+        {
+            unsigned int i = boffsetL + bi;
+            unsigned int j = boffsetC + bj;
+            m->addSymDValue(i, j, rowId, colId, rowIdT, colIdT, b);
         }
     };
 
-    template<class MReal>
+    template<class MReal, class TPolicy = sofa::component::linearsolver::CRSMechanicalPolicy >
     class CRSMatrixWriter
     {
-        sofa::component::linearsolver::CompressedRowSparseMatrix<MReal>* m;
-        unsigned int offsetL, offsetC;
+        sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<MReal, TPolicy>* m;
+        const unsigned int offsetL, offsetC;
     public:
-        CRSMatrixWriter(sofa::component::linearsolver::CompressedRowSparseMatrix<MReal>* m, unsigned int offsetL, unsigned int offsetC) : m(m), offsetL(offsetL), offsetC(offsetC) {}
+        CRSMatrixWriter(sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<MReal, TPolicy>* m, unsigned int offsetL, unsigned int offsetC) : m(m), offsetL(offsetL), offsetC(offsetC) {}
         void add(unsigned int bi, unsigned int bj, const MatBloc& b)
         {
             unsigned int i0 = offsetL + bi*NL;
             unsigned int j0 = offsetC + bj*NC;
             for (unsigned int i=0; i<NL; ++i)
                 for (unsigned int j=0; j<NC; ++j)
-                    *m->wbloc(i0+i,j0+j,true) += (MReal)b[i][j];
+                    m->addBloc(i0+i,j0+j,(MReal)b[i][j]);
+        }
+        void add(unsigned int bi, unsigned int bj, int& rowId, int& colId, const MatBloc& b)
+        {
+            unsigned int i0 = offsetL + bi*NL;
+            unsigned int j0 = offsetC + bj*NC;
+            for (unsigned int i=0; i<NL; ++i)
+                for (unsigned int j=0; j<NC; ++j)
+                    m->addBloc(i0+i,j0+j,rowId,colId,(MReal)b[i][j]);
+        }
+        void addDBloc(unsigned int bi, unsigned int bj, const DBloc& b)
+        {
+            unsigned int i0 = offsetL + bi*NL;
+            unsigned int j0 = offsetC + bj*NC;
+            for (unsigned int i=0; i<NL; ++i)
+                m->addBloc(i0+i,j0+i,(MReal)b[i]);
+        }
+        void addDValue(unsigned int bi, unsigned int bj, const Real b)
+        {
+            unsigned int i0 = offsetL + bi*NL;
+            unsigned int j0 = offsetC + bj*NC;
+            for (unsigned int i=0; i<NL; ++i)
+                m->addBloc(i0+i,j0+i,(MReal)b);
+        }
+        void addDValue(unsigned int bi, unsigned int bj, int& rowId, int& colId, const Real b)
+        {
+            unsigned int i0 = offsetL + bi*NL;
+            unsigned int j0 = offsetC + bj*NC;
+            for (unsigned int i=0; i<NL; ++i)
+                m->addBloc(i0+i,j0+i,rowId,colId,(MReal)b);
+        }
+        void addDiag(unsigned int bi, const MatBloc& b)
+        {
+            add(bi, bi, b);
+        }
+        void addDiag(unsigned int bi, int& rowId, int& colId, const MatBloc &b)
+        {
+            add(bi, bi, rowId, colId, b);
+        }
+        void addDiagDBloc(unsigned int bi, const DBloc& b)
+        {
+            addDBloc(bi, bi, b);
+        }
+        void addDiagDValue(unsigned int bi, const Real b)
+        {
+            addDValue(bi, bi, b);
+        }
+        void addDiagDValue(unsigned int bi, int& rowId, int& colId, const Real b)
+        {
+            addDValue(bi, bi, rowId, colId, b);
+        }
+        void addSym(unsigned int bi, unsigned int bj, const MatBloc& b)
+        {
+            unsigned int i0 = offsetL + bi*NL;
+            unsigned int j0 = offsetC + bj*NC;
+            for (unsigned int i=0; i<NL; ++i)
+                for (unsigned int j=0; j<NC; ++j)
+                {
+                    m->addBloc(i0+i,j0+j,(MReal)b[i][j]);
+                    m->addBloc(j0+j,i0+i,(MReal)b[i][j]);
+                }
+        }
+        void addSym(unsigned int bi, unsigned int bj, int& rowId, int& colId, int& rowIdT, int& colIdT, const MatBloc &b)
+        {
+            unsigned int i0 = offsetL + bi*NL;
+            unsigned int j0 = offsetC + bj*NC;
+            for (unsigned int i=0; i<NL; ++i)
+                for (unsigned int j=0; j<NC; ++j)
+                {
+                    m->addBloc(i0+i,j0+j,rowId,colId,(MReal)b[i][j]);
+                    m->addBloc(j0+j,i0+i,rowIdT,colIdT,(MReal)b[i][j]);
+                }
+        }
+        void addSymDBloc(unsigned int bi, unsigned int bj, const DBloc& b)
+        {
+            unsigned int i0 = offsetL + bi*NL;
+            unsigned int j0 = offsetC + bj*NC;
+            for (unsigned int i=0; i<NL; ++i)
+            {
+                m->addBloc(i0+i,j0+i,(MReal)b[i]);
+                m->addBloc(j0+i,i0+i,(MReal)b[i]);
+            }
+        }
+        void addSymDValue(unsigned int bi, unsigned int bj, const Real b)
+        {
+            unsigned int i0 = offsetL + bi*NL;
+            unsigned int j0 = offsetC + bj*NC;
+            for (unsigned int i=0; i<NL; ++i)
+            {
+                m->addBloc(i0+i,j0+i,(MReal)b);
+                m->addBloc(j0+i,i0+i,(MReal)b);
+            }
+        }
+        void addSymDValue(unsigned int bi, unsigned int bj, int& rowId, int& colId, int& rowIdT, int& colIdT, Real b)
+        {
+            unsigned int i0 = offsetL + bi*NL;
+            unsigned int j0 = offsetC + bj*NC;
+            for (unsigned int i=0; i<NL; ++i)
+            {
+                m->addBloc(i0+i,j0+i,rowId,colId,(MReal)b);
+                m->addBloc(j0+i,i0+i,rowIdT,colIdT,(MReal)b);
+            }
         }
     };
 
@@ -114,32 +278,64 @@ public:
         {
             unsigned int boffsetL = offsetL / NL;
             unsigned int boffsetC = offsetC / NC;
-            if (sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<NL,NC,double> > * mat = dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<NL,NC,double> > * >(m))
+            if (sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL,NC,double> > * mat = 
+				dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL, NC, double> > *>(m))
+				//sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL,NC,double> >::DynamicCast(m))
             {
                 dispatch(BlocCRSMatrixWriter<double>(mat, boffsetL, boffsetC));
             }
-            else if (sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<NL,NC,float> > * mat = dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<NL,NC,float> > * >(m))
+            else if (sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL,NC,float> > * mat =
+				dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL, NC, float> > *>(m))
+				//sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL,NC,float> >::DynamicCast(m))
             {
                 dispatch(BlocCRSMatrixWriter<float>(mat, boffsetL, boffsetC));
             }
+            else if (sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL, NC, double>, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy > * mat =
+				dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL, NC, double>, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy > *>(m))
+				//sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL, NC, double>, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy >::DynamicCast(m))
+            {
+                dispatch(BlocCRSMatrixWriter<double, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy >(mat, boffsetL, boffsetC));
+            }
+            else if (sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL, NC, float>, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy > * mat =
+				dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL, NC, float>, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy > *>(m))
+				//sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<NL, NC, float>, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy >::DynamicCast(m))
+            {
+                dispatch(BlocCRSMatrixWriter<float, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy>(mat, boffsetL, boffsetC));
+            }
             else
             {
-                dispatch(BlocBaseMatrixWriter(m, boffsetL, boffsetC));
+                assert(false);
             }
         }
         else
         {
-            if (sofa::component::linearsolver::CompressedRowSparseMatrix<double> * mat = dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrix<double> * >(m))
+            if (sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<double> * mat = 
+				dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<double> *>(m))
+				//sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<double>::DynamicCast(m))
             {
                 dispatch(CRSMatrixWriter<double>(mat, offsetL, offsetC));
             }
-            else if (sofa::component::linearsolver::CompressedRowSparseMatrix<float> * mat = dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrix<float> * >(m))
+            else if (sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<float> * mat = 
+				dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<float> *>(m))
+				//sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<float>::DynamicCast(m))
             {
                 dispatch(CRSMatrixWriter<float>(mat, offsetL, offsetC));
             }
+            else if (sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<double, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy > * mat =
+				dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<double, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy > *>(m))
+				//sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<double, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy >::DynamicCast(m))
+            {
+                dispatch(CRSMatrixWriter<double, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy >(mat, offsetL, offsetC));
+            }
+            else if (sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<float, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy > * mat =
+				dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<float, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy > *>(m))
+				//sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<float, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy >::DynamicCast(m))
+            {
+                dispatch(CRSMatrixWriter<float, sofa::component::linearsolver::CRSMechanicalStoreTouchedPolicy>(mat, offsetL, offsetC));
+            }
             else
             {
-                dispatch(BaseMatrixWriter(m, offsetL, offsetC));
+                assert(false);
             }
         }
     }
@@ -165,6 +361,49 @@ public:
         DispatcherForceField_addKToMatrix<FF> dispatch(main, mparams);
         apply(dispatch, r.matrix, r.offset, r.offset);
     }
+
+    template<class FF>
+    struct DispatcherForceField_addMToMatrix
+    {
+        FF* main;
+        const sofa::core::MechanicalParams* mparams;
+        DispatcherForceField_addMToMatrix(FF* main, const sofa::core::MechanicalParams* mparams) : main(main), mparams(mparams) {}
+        template <class MatrixWriter>
+        void operator()(const MatrixWriter& m)
+        {
+            main->addMToMatrixT(mparams, m);
+        }
+    };
+
+    template<class FF>
+    void addMToMatrix(FF* main, const sofa::core::MechanicalParams* mparams, sofa::core::behavior::MultiMatrixAccessor::MatrixRef r)
+    {
+        if (!r) return;
+        DispatcherForceField_addMToMatrix<FF> dispatch(main, mparams);
+        apply(dispatch, r.matrix, r.offset, r.offset);
+    }
+
+    template<class FF>
+    struct DispatcherForceField_addMBKToMatrix
+    {
+        FF* main;
+        const sofa::core::MechanicalParams* mparams;
+        DispatcherForceField_addMBKToMatrix(FF* main, const sofa::core::MechanicalParams* mparams) : main(main), mparams(mparams) {}
+        template <class MatrixWriter>
+        void operator()(const MatrixWriter& m)
+        {
+            main->addMBKToMatrixT(mparams, m);
+        }
+    };
+
+    template<class FF>
+    void addMBKToMatrix(FF* main, const sofa::core::MechanicalParams* mparams, sofa::core::behavior::MultiMatrixAccessor::MatrixRef r)
+    {
+        if (!r) return;
+        DispatcherForceField_addMBKToMatrix<FF> dispatch(main, mparams);
+        apply(dispatch, r.matrix, r.offset, r.offset);
+    }
 };
+
 
 } // namespace sofa::component::linearsolver

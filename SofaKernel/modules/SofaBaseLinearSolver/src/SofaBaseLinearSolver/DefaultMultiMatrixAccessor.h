@@ -25,6 +25,7 @@
 #include <sofa/simulation/MechanicalVisitor.h>
 #include <sofa/core/behavior/LinearSolver.h>
 #include <vector>
+#include <SofaBaseLinearSolver/FullMatrix.h>
 
 
 namespace sofa::component::linearsolver

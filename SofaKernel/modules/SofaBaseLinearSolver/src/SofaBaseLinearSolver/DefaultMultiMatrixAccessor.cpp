@@ -153,6 +153,7 @@ int DefaultMultiMatrixAccessor::getGlobalOffset(const sofa::core::behavior::Base
 
 DefaultMultiMatrixAccessor::MatrixRef DefaultMultiMatrixAccessor::getMatrix(const sofa::core::behavior::BaseMechanicalState* mstate) const
 {
+#if 0
     MatrixRef r;
     auto itRealState = realStateOffsets.find(mstate);
 
@@ -197,6 +198,43 @@ DefaultMultiMatrixAccessor::MatrixRef DefaultMultiMatrixAccessor::getMatrix(cons
             msg_warning() << "nullptr matrix found for state " << mstate->getName() ;
     }
     return r;
+#endif
+
+	MatrixRef r;
+
+	/*std::map< const sofa::core::behavior::BaseMechanicalState*, int >::const_iterator*/ auto itRealState = realStateOffsets.find(mstate);
+
+	if (itRealState != realStateOffsets.end()) //case where mechanical state is a non mapped state
+	{
+		if (globalMatrix)
+		{
+			r.matrix = globalMatrix;
+			r.offset = itRealState->second;
+		}
+	}
+	else //case where mechanical state is a mapped state
+	{
+
+		std::map< const sofa::core::behavior::BaseMechanicalState*, defaulttype::BaseMatrix*>::iterator itmapped = mappedMatrices.find(mstate);
+		if (itmapped != mappedMatrices.end()) // this mapped state and its matrix has been already added and created
+		{
+			r.matrix = itmapped->second;
+			r.offset = 0;
+		}
+		else // this mapped state and its matrix hasnt been created we creat it and its matrix by "createMatrix"
+		{
+			defaulttype::BaseMatrix* m = createMatrix(mstate, mstate);
+			r.matrix = m;
+			r.offset = 0;
+			//when creating an matrix, it dont have to be added before
+			assert(diagonalStiffnessBloc.find(mstate) == diagonalStiffnessBloc.end());
+			mappedMatrices[mstate] = r.matrix;
+		}
+	}
+
+	diagonalStiffnessBloc[mstate] = r;
+
+	return r;
 }
 
 DefaultMultiMatrixAccessor::InteractionMatrixRef DefaultMultiMatrixAccessor::getMatrix(const sofa::core::behavior::BaseMechanicalState* mstate1, const sofa::core::behavior::BaseMechanicalState* mstate2) const
@@ -552,7 +590,9 @@ defaulttype::BaseMatrix* DefaultMultiMatrixAccessor::createMatrix(const sofa::co
 
 defaulttype::BaseMatrix* DefaultMultiMatrixAccessor::createMatrixImpl(const sofa::core::behavior::BaseMechanicalState* mstate1, const sofa::core::behavior::BaseMechanicalState* mstate2, bool doPrintInfo)
 {
-    component::linearsolver::CompressedRowSparseMatrix<SReal>* m = new component::linearsolver::CompressedRowSparseMatrix<SReal>;
+    // The auxiliar interaction matrix is added if and only if at least one of two state is not real state
+    //assert(! (realStateOffsets.find(mstate1) != realStateOffsets.end() && realStateOffsets.find(mstate2) != realStateOffsets.end()) );
+    FullMatrix<SReal>* m = new FullMatrix<SReal>;
     if(mstate1 == mstate2)
     {
         m->resize( mstate1->getMatrixSize(),mstate1->getMatrixSize());

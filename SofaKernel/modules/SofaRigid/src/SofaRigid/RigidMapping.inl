@@ -638,35 +638,41 @@ const sofa::defaulttype::BaseMatrix* RigidMapping<TIn, TOut>::getK()
 template <class TIn, class TOut>
 const sofa::defaulttype::BaseMatrix* RigidMapping<TIn, TOut>::getJ()
 {
-    const VecCoord& out =this->toModel->read(core::ConstVecCoordId::position())->getValue();
-    const InVecCoord& in =this->fromModel->read(core::ConstVecCoordId::position())->getValue();
-    const VecCoord& pts = this->getPoints();
-    assert(pts.size() == out.size());
+#ifdef SOFA_HAVE_EIGEN2
+	getJs();
+	return &eigenJacobian;
+#else
+	return nullptr;
+#endif
+    //const VecCoord& out =this->toModel->read(core::ConstVecCoordId::position())->getValue();
+    //const InVecCoord& in =this->fromModel->read(core::ConstVecCoordId::position())->getValue();
+    //const VecCoord& pts = this->getPoints();
+    //assert(pts.size() == out.size());
 
-    if (matrixJ.get() == 0 || updateJ)
-    {
-        updateJ = false;
-        if (matrixJ.get() == 0 ||
-                (unsigned int)matrixJ->rowBSize() != out.size() ||
-                (unsigned int)matrixJ->colBSize() != in.size())
-        {
-            matrixJ.reset(new MatrixType(out.size() * NOut, in.size() * NIn));
-        }
-        else
-        {
-            matrixJ->clear();
-        }
+    //if (matrixJ.get() == 0 || updateJ)
+    //{
+    //    updateJ = false;
+    //    if (matrixJ.get() == 0 ||
+    //            (unsigned int)matrixJ->rowBSize() != out.size() ||
+    //            (unsigned int)matrixJ->colBSize() != in.size())
+    //    {
+    //        matrixJ.reset(new MatrixType(out.size() * NOut, in.size() * NIn));
+    //    }
+    //    else
+    //    {
+    //        matrixJ->clear();
+    //    }
 
 
-        for (unsigned int outIdx = 0; outIdx < pts.size() ; outIdx++)
-        {
-            unsigned int inIdx = getRigidIndex(outIdx);
+    //    for (unsigned int outIdx = 0; outIdx < pts.size() ; outIdx++)
+    //    {
+    //        unsigned int inIdx = getRigidIndex(outIdx);
 
-            setJMatrixBlock(outIdx, inIdx);
-        }
-    }
-    matrixJ->compress();
-    return matrixJ.get();
+    //        setJMatrixBlock(outIdx, inIdx);
+    //    }
+    //}
+    //matrixJ->compress();
+    //return matrixJ.get();
 }
 
 template<class Real>
@@ -700,12 +706,12 @@ struct RigidMappingMatrixHelper<3, Real>
     }
 };
 
-template <class TIn, class TOut>
-void RigidMapping<TIn, TOut>::setJMatrixBlock(unsigned outIdx, unsigned inIdx)
-{
-    MBloc& block = *matrixJ->wbloc(outIdx, inIdx, true);
-    RigidMappingMatrixHelper<N, Real>::setMatrix(block, rotatedPoints[outIdx]);
-}
+//template <class TIn, class TOut>
+//void RigidMapping<TIn, TOut>::setJMatrixBlock(unsigned outIdx, unsigned inIdx)
+//{
+//    MBloc& block = *matrixJ->wbloc(outIdx, inIdx, true);
+//    RigidMappingMatrixHelper<N, Real>::setMatrix(block, rotatedPoints[outIdx]);
+//}
 
 template <class TIn, class TOut>
 void RigidMapping<TIn, TOut>::draw(const core::visual::VisualParams* vparams)

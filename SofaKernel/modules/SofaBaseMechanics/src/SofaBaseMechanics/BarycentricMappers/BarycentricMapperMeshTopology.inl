@@ -63,12 +63,12 @@ BarycentricMapperMeshTopology<In,Out>::~BarycentricMapperMeshTopology()
         delete m_matrixJ;
 }
 
-template <class In, class Out>
-void BarycentricMapperMeshTopology<In,Out>::addMatrixContrib(MatrixType* m,
-                                                             int row, int col, Real value)
-{
-    Inherit1::addMatrixContrib(m, row, col, value);
-}
+//template <class In, class Out>
+//void BarycentricMapperMeshTopology<In,Out>::addMatrixContrib(MatrixType* m,
+//                                                             int row, int col, Real value)
+//{
+//    Inherit1::addMatrixContrib(m, row, col, value);
+//}
 
 template <class In, class Out>
 void BarycentricMapperMeshTopology<In,Out>::init ( const typename Out::VecCoord& out, const typename In::VecCoord& in )
@@ -694,7 +694,8 @@ void BarycentricMapperMeshTopology<In,Out>::draw  (const core::visual::VisualPar
 template <class In, class Out>
 const sofa::defaulttype::BaseMatrix* BarycentricMapperMeshTopology<In,Out>::getJ(int outSize, int inSize)
 {
-
+	return nullptr;
+#if 0
     if (m_matrixJ && !m_updateJ && m_matrixJ->rowBSize() == (MatrixTypeIndex)outSize && m_matrixJ->colBSize() == (MatrixTypeIndex)inSize)
         return m_matrixJ;
     if (outSize > 0 && m_map1d.size()+m_map2d.size()+m_map3d.size() == 0)
@@ -793,6 +794,7 @@ const sofa::defaulttype::BaseMatrix* BarycentricMapperMeshTopology<In,Out>::getJ
     m_matrixJ->compress();
     m_updateJ = false;
     return m_matrixJ;
+#endif
 }
 
 

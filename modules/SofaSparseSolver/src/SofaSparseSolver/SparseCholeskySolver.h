@@ -28,7 +28,7 @@
 #include <sofa/simulation/MechanicalVisitor.h>
 #include <SofaBaseLinearSolver/FullMatrix.h>
 #include <SofaBaseLinearSolver/SparseMatrix.h>
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
+#include <SofaBaseLinearSolver/CompressedRowSparseMatrixMechanical.h>
 #include <sofa/helper/map.h>
 #include <cmath>
 #include <csparse.h>
@@ -73,8 +73,8 @@ public :
 };
 
 #if  !defined(SOFA_COMPONENT_LINEARSOLVER_SPARSECHOLESKYSOLVER_CPP)
-extern template class SOFA_SOFASPARSESOLVER_API SparseCholeskySolver< CompressedRowSparseMatrix<double>,FullVector<double> >;
-extern template class SOFA_SOFASPARSESOLVER_API SparseCholeskySolver< CompressedRowSparseMatrix<float>,FullVector<float> >;
+extern template class SOFA_SOFASPARSESOLVER_API SparseCholeskySolver< CompressedRowSparseMatrixMechanical<double>,FullVector<double> >;
+extern template class SOFA_SOFASPARSESOLVER_API SparseCholeskySolver< CompressedRowSparseMatrixMechanical<float>,FullVector<float> >;
 #endif
 
 } // namespace linearsolver

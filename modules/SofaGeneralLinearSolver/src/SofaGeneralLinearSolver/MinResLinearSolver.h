@@ -63,12 +63,12 @@ public:
 extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< GraphScatteredMatrix, GraphScatteredVector >;
 extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< FullMatrix<SRreal>, FullVector<SRreal> >;
 extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< SparseMatrix<SRreal>, FullVector<SRreal> >;
-extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrix<SRreal>, FullVector<SRreal> >;
-extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrix<defaulttype::Mat<2,2,SRreal> >, FullVector<SRreal> >;
-extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrix<defaulttype::Mat<3,3,SRreal> >, FullVector<SRreal> >;
-extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrix<defaulttype::Mat<4,4,SRreal> >, FullVector<SRreal> >;
-extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrix<defaulttype::Mat<6,6,SRreal> >, FullVector<SRreal> >;
-extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrix<defaulttype::Mat<8,8,SRreal> >, FullVector<SRreal> >;
+extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrixMechanical<SRreal>, FullVector<SRreal> >;
+extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrixMechanical<defaulttype::Mat<2,2,SRreal> >, FullVector<SRreal> >;
+extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrixMechanical<defaulttype::Mat<3,3,SRreal> >, FullVector<SRreal> >;
+extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrixMechanical<defaulttype::Mat<4,4,SRreal> >, FullVector<SRreal> >;
+extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrixMechanical<defaulttype::Mat<6,6,SRreal> >, FullVector<SRreal> >;
+extern template class SOFA_SOFAGENERALLINEARSOLVER_API MinResLinearSolver< CompressedRowSparseMatrixMechanical<defaulttype::Mat<8,8,SRreal> >, FullVector<SRreal> >;
 #endif
 
 } //namespace sofa::component::linearsolver

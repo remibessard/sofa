@@ -69,8 +69,8 @@ list(APPEND HEADER_FILES
     ${SOFABOUNDARYCONDITION_SRC}/SurfacePressureForceField.inl
     ${SOFABOUNDARYCONDITION_SRC}/TaitSurfacePressureForceField.h
     ${SOFABOUNDARYCONDITION_SRC}/TaitSurfacePressureForceField.inl
-    ${SOFABOUNDARYCONDITION_SRC}/TorsionForceField.h
-    ${SOFABOUNDARYCONDITION_SRC}/TorsionForceField.inl
+#    ${SOFABOUNDARYCONDITION_SRC}/TorsionForceField.h
+#    ${SOFABOUNDARYCONDITION_SRC}/TorsionForceField.inl
     ${SOFABOUNDARYCONDITION_SRC}/TrianglePressureForceField.h
     ${SOFABOUNDARYCONDITION_SRC}/TrianglePressureForceField.inl
     ${SOFABOUNDARYCONDITION_SRC}/UniformVelocityDampingForceField.h
@@ -114,7 +114,7 @@ list(APPEND SOURCE_FILES
     ${SOFABOUNDARYCONDITION_SRC}/SphereForceField.cpp
     ${SOFABOUNDARYCONDITION_SRC}/SurfacePressureForceField.cpp
     ${SOFABOUNDARYCONDITION_SRC}/TaitSurfacePressureForceField.cpp
-    ${SOFABOUNDARYCONDITION_SRC}/TorsionForceField.cpp
+#    ${SOFABOUNDARYCONDITION_SRC}/TorsionForceField.cpp
     ${SOFABOUNDARYCONDITION_SRC}/TrianglePressureForceField.cpp
     ${SOFABOUNDARYCONDITION_SRC}/UniformVelocityDampingForceField.cpp
     ${SOFABOUNDARYCONDITION_SRC}/ProjectToLineConstraint.cpp

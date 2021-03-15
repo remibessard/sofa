@@ -122,12 +122,12 @@ void SparseCholeskySolver<TMatrix,TVector>::invert(Matrix& M)
 }
 
 int SparseCholeskySolverClass = core::RegisterObject("Direct linear solver based on Sparse Cholesky factorization, implemented with the CSPARSE library")
-        .add< SparseCholeskySolver< CompressedRowSparseMatrix<double>,FullVector<double> > >(true)
-        .add< SparseCholeskySolver< CompressedRowSparseMatrix<float>,FullVector<float> > >()
+        .add< SparseCholeskySolver< CompressedRowSparseMatrixMechanical<double>,FullVector<double> > >(true)
+        .add< SparseCholeskySolver< CompressedRowSparseMatrixMechanical<float>,FullVector<float> > >()
         ;
 
-template class SOFA_SOFASPARSESOLVER_API SparseCholeskySolver< CompressedRowSparseMatrix<double>,FullVector<double> >;
-template class SOFA_SOFASPARSESOLVER_API SparseCholeskySolver< CompressedRowSparseMatrix<float>,FullVector<float> >;
+template class SOFA_SOFASPARSESOLVER_API SparseCholeskySolver< CompressedRowSparseMatrixMechanical<double>,FullVector<double> >;
+template class SOFA_SOFASPARSESOLVER_API SparseCholeskySolver< CompressedRowSparseMatrixMechanical<float>,FullVector<float> >;
 
 } // namespace linearsolver
 

@@ -10,7 +10,7 @@ set(HEADER_FILES
     ${SOFABASELINEARSOLVER_SRC}/CGLinearSolver.h
     ${SOFABASELINEARSOLVER_SRC}/CGLinearSolver.inl
     ${SOFABASELINEARSOLVER_SRC}/CompressedRowSparseMatrix.h
-    ${SOFABASELINEARSOLVER_SRC}/CompressedRowSparseMatrix.inl
+#    ${SOFABASELINEARSOLVER_SRC}/CompressedRowSparseMatrix.inl
     ${SOFABASELINEARSOLVER_SRC}/DefaultMultiMatrixAccessor.h
     ${SOFABASELINEARSOLVER_SRC}/DiagonalMatrix.h
     ${SOFABASELINEARSOLVER_SRC}/FullMatrix.h
@@ -22,6 +22,8 @@ set(HEADER_FILES
     ${SOFABASELINEARSOLVER_SRC}/SingleMatrixAccessor.h
     ${SOFABASELINEARSOLVER_SRC}/SparseMatrix.h
     ${SOFABASELINEARSOLVER_SRC}/matrix_bloc_traits.h
+    ${SOFABASELINEARSOLVER_SRC}/CompressedRowSparseMatrixMechanical.h
+    ${SOFABASELINEARSOLVER_SRC}/CompressedRowSparseMatrixMechanical.inl
 )
 
 set(SOURCE_FILES
@@ -32,6 +34,8 @@ set(SOURCE_FILES
     ${SOFABASELINEARSOLVER_SRC}/GraphScatteredTypes.cpp
     ${SOFABASELINEARSOLVER_SRC}/MatrixLinearSolver.cpp
     ${SOFABASELINEARSOLVER_SRC}/SingleMatrixAccessor.cpp
+    ${SOFABASELINEARSOLVER_SRC}/CompressedRowSparseMatrix.cpp
+    ${SOFABASELINEARSOLVER_SRC}/CompressedRowSparseMatrixMechanical.cpp
 )
 
 find_package(SofaFramework REQUIRED) # SofaSimulationCore

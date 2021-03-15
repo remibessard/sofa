@@ -24,7 +24,7 @@
 
 #include <SofaBaseLinearSolver/FullMatrix.h>
 #include <SofaBaseLinearSolver/SparseMatrix.h>
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
+#include <SofaBaseLinearSolver/CompressedRowSparseMatrixMechanical.h>
 #include <sofa/core/ObjectFactory.h>
 
 namespace sofa::component::linearsolver
@@ -63,12 +63,12 @@ int CGLinearSolverClass = core::RegisterObject("Linear system solver using the c
         .add< CGLinearSolver< GraphScatteredMatrix, GraphScatteredVector > >(true)
         .add< CGLinearSolver< FullMatrix<double>, FullVector<double> > >()
         .add< CGLinearSolver< SparseMatrix<double>, FullVector<double> > >()
-        .add< CGLinearSolver< CompressedRowSparseMatrix<double>, FullVector<double> > >()
-        .add< CGLinearSolver< CompressedRowSparseMatrix<Mat<2,2,double> >, FullVector<double> > >()
-        .add< CGLinearSolver< CompressedRowSparseMatrix<Mat<3,3,double> >, FullVector<double> > >()
-        .add< CGLinearSolver< CompressedRowSparseMatrix<Mat<4,4,double> >, FullVector<double> > >()
-        .add< CGLinearSolver< CompressedRowSparseMatrix<Mat<6,6,double> >, FullVector<double> > >()
-        .add< CGLinearSolver< CompressedRowSparseMatrix<Mat<8,8,double> >, FullVector<double> > >()
+        .add< CGLinearSolver< CompressedRowSparseMatrixMechanical<double>, FullVector<double> > >()
+        .add< CGLinearSolver< CompressedRowSparseMatrixMechanical<Mat<2,2,double> >, FullVector<double> > >()
+        .add< CGLinearSolver< CompressedRowSparseMatrixMechanical<Mat<3,3,double> >, FullVector<double> > >()
+        .add< CGLinearSolver< CompressedRowSparseMatrixMechanical<Mat<4,4,double> >, FullVector<double> > >()
+        .add< CGLinearSolver< CompressedRowSparseMatrixMechanical<Mat<6,6,double> >, FullVector<double> > >()
+        .add< CGLinearSolver< CompressedRowSparseMatrixMechanical<Mat<8,8,double> >, FullVector<double> > >()
 
         .addAlias("CGSolver")
         .addAlias("ConjugateGradient")
@@ -77,12 +77,12 @@ int CGLinearSolverClass = core::RegisterObject("Linear system solver using the c
 template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< GraphScatteredMatrix, GraphScatteredVector >;
 template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< FullMatrix<double>, FullVector<double> >;
 template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< SparseMatrix<double>, FullVector<double> >;
-template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrix<double>, FullVector<double> >;
-template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrix<defaulttype::Mat<2,2,double> >, FullVector<double> >;
-template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrix<defaulttype::Mat<3,3,double> >, FullVector<double> >;
-template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrix<defaulttype::Mat<4,4,double> >, FullVector<double> >;
-template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrix<defaulttype::Mat<6,6,double> >, FullVector<double> >;
-template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrix<defaulttype::Mat<8,8,double> >, FullVector<double> >;
+template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrixMechanical<double>, FullVector<double> >;
+template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrixMechanical<defaulttype::Mat<2,2,double> >, FullVector<double> >;
+template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrixMechanical<defaulttype::Mat<3,3,double> >, FullVector<double> >;
+template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrixMechanical<defaulttype::Mat<4,4,double> >, FullVector<double> >;
+template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrixMechanical<defaulttype::Mat<6,6,double> >, FullVector<double> >;
+template class SOFA_SOFABASELINEARSOLVER_API CGLinearSolver< CompressedRowSparseMatrixMechanical<defaulttype::Mat<8,8,double> >, FullVector<double> >;
 
 
 } // namespace sofa::component::linearsolver

@@ -190,7 +190,8 @@ void BarycentricMapperRegularGridTopology<In,Out>::applyJT ( typename In::VecDer
 template <class In, class Out>
 const sofa::defaulttype::BaseMatrix* BarycentricMapperRegularGridTopology<In,Out>::getJ(int outSize, int inSize)
 {
-
+	return nullptr;
+#if 0
     if (m_matrixJ && !m_updateJ)
         return m_matrixJ;
 
@@ -223,6 +224,7 @@ const sofa::defaulttype::BaseMatrix* BarycentricMapperRegularGridTopology<In,Out
     }
     m_updateJ = false;
     return m_matrixJ;
+#endif
 }
 
 
@@ -267,12 +269,12 @@ void BarycentricMapperRegularGridTopology<In,Out>::draw  (const core::visual::Vi
     vparams->drawTool()->drawLines ( points, 1, sofa::helper::types::RGBAColor::blue());
 }
 
-template <class In, class Out>
-void BarycentricMapperRegularGridTopology<In,Out>::addMatrixContrib(MatrixType* m,
-                                                                    int row, int col, Real value)
-{
-    Inherit1::addMatrixContrib(m, row, col, value);
-}
+//template <class In, class Out>
+//void BarycentricMapperRegularGridTopology<In,Out>::addMatrixContrib(MatrixType* m,
+//                                                                    int row, int col, Real value)
+//{
+//    Inherit1::addMatrixContrib(m, row, col, value);
+//}
 
 template <class In, class Out>
 void BarycentricMapperRegularGridTopology<In,Out>::applyJT ( typename In::MatrixDeriv& out, const typename Out::MatrixDeriv& in )

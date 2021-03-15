@@ -25,7 +25,7 @@
 #include <SofaEigen2Solver/EigenBaseSparseMatrix.h>
 #include <sofa/defaulttype/DataTypeInfo.h>
 #include <sofa/defaulttype/Mat.h>
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
+#include <SofaBaseLinearSolver/CompressedRowSparseMatrixMechanical.h>
 #include <sofa/helper/SortedPermutation.h>
 #include <sofa/helper/vector.h>
 #include <Eigen/Core>
@@ -248,7 +248,7 @@ public:
     /** Set from a CompressedRowSparseMatrix. @pre crs must be compressed
       */
     template<class AnyReal>
-    void copyFrom( const CompressedRowSparseMatrix< defaulttype::Mat<Nout,Nin, AnyReal> >& crs )
+    void copyFrom( const CompressedRowSparseMatrixMechanical< defaulttype::Mat<Nout,Nin, AnyReal> >& crs )
     {
         this->resize( crs.rowSize(), crs.colSize() );
 
@@ -257,7 +257,7 @@ public:
         {
             int blRow = crs.rowIndex[xi];      // block row
 
-            typename CompressedRowSparseMatrix<Block>::Range rowRange(crs.rowBegin[xi], crs.rowBegin[xi+1]);
+            typename CompressedRowSparseMatrixMechanical<Block>::Range rowRange(crs.rowBegin[xi], crs.rowBegin[xi+1]);
 
             for( unsigned r=0; r<Nout; r++ )   // process one scalar row after another
             {

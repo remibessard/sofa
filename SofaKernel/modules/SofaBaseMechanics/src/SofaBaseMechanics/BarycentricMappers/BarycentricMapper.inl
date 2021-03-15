@@ -27,13 +27,13 @@ namespace sofa::component::mapping::_barycentricmapper_
 
 using sofa::component::linearsolver::CompressedRowSparseMatrix;
 
-template<class In, class Out>
-void BarycentricMapper<In,Out>::addMatrixContrib(CompressedRowSparseMatrix<MBloc>* m, int row, int col, Real value)
-{
-    MBloc* b = m->wbloc(row, col, true); // get write access to a matrix bloc, creating it if not found
-    for (int i=0; i < ((int)NIn < (int)NOut ? (int)NIn : (int)NOut); ++i)
-        (*b)[i][i] += value;
-}
+//template<class In, class Out>
+//void BarycentricMapper<In,Out>::addMatrixContrib(CompressedRowSparseMatrix<MBloc>* m, int row, int col, Real value)
+//{
+//    MBloc* b = m->wbloc(row, col, true); // get write access to a matrix bloc, creating it if not found
+//    for (int i=0; i < ((int)NIn < (int)NOut ? (int)NIn : (int)NOut); ++i)
+//        (*b)[i][i] += value;
+//}
 
 
 template<class In, class Out>

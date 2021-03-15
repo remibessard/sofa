@@ -279,7 +279,8 @@ void BeamLinearMapping<TIn, TOut>::draw(const core::visual::VisualParams* vparam
 template <class TIn, class TOut>
 const sofa::defaulttype::BaseMatrix* BeamLinearMapping<TIn, TOut>::getJ()
 {
-
+	return nullptr;
+#if 0
     const unsigned int  inStateSize = this->fromModel->getSize();
     const unsigned int outStateSize = points.size();
 
@@ -330,6 +331,7 @@ const sofa::defaulttype::BaseMatrix* BeamLinearMapping<TIn, TOut>::getJ()
         }
     }
     return matrixJ.get();
+#endif
 }
 
 } // namespace sofa::component::mapping

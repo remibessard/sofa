@@ -28,204 +28,301 @@
 namespace sofa::component::linearsolver
 {
 
-template<Size TN, typename T> class bloc_index_func
-{
-public:
-    enum { N = TN };
-    static void split(T& index, T& modulo)
-    {
-        if constexpr (N == 1)
-        {
-            ; // nothing
-            return;
-        }
-        if constexpr (N == 2)
-        {
-            modulo = index & 1;
-            index = index >> 1;
-            return;
-        }
-        if constexpr (N == 4)
-        {
-            modulo = index & 3;
-            index = index >> 2;
-            return;
-        }
-        if constexpr (N == 8)
-        {
-            modulo = index & 7;
-            index = index >> 3;
-            return;
-        }
-        else
-        {
-            modulo = index % N;
-            index = index / N;
-            return;
-        }
-    }
-};
+	template<int TN> class bloc_index_func
+	{
+	public:
+		enum { N = TN };
+		static void split(int& index, int& modulo)
+		{
+			modulo = index % N;
+			index = index / N;
+		}
+	};
 
-// by default, supposing T is a defaulttype::Mat (useful for type derivated from defaulttype::Mat)
-template<class T, typename IndexType>
-class matrix_bloc_traits
-{
-public:
-    typedef T Bloc;
-    typedef typename T::Real Real;
-    enum { NL = T::nbLines };
-    enum { NC = T::nbCols };
-    static Real& v(Bloc& b, IndexType row, IndexType col) { return b[row][col]; }
-    static const Real& v(const Bloc& b, IndexType row, IndexType col) { return b[row][col]; }
-    static void clear(Bloc& b) { b.clear(); }
-    static bool empty(const Bloc& b)
-    {
-        for (IndexType i=0; i<NL; ++i)
-            for (IndexType j=0; j<NC; ++j)
-                if (b[i][j] != 0) return false;
-        return true;
-    }
-    static void invert(Bloc& result, const Bloc& b) { result.invert(b); }
+	template<> class bloc_index_func<1>
+	{
+	public:
+		enum { N = 1 };
+		static void split(int&, int&)
+		{
+		}
+	};
 
-    static void split_row_index(IndexType& index, IndexType& modulo) { bloc_index_func<NL, IndexType>::split(index, modulo); }
-    static void split_col_index(IndexType& index, IndexType& modulo) { bloc_index_func<NC, IndexType>::split(index, modulo); }
+	template<> class bloc_index_func<2>
+	{
+	public:
+		enum { N = 2 };
+		static void split(int& index, int& modulo)
+		{
+			modulo = index & 1;
+			index = index >> 1;
+		}
+	};
 
-    static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return matrix_bloc_traits<Real, IndexType>::getElementType(); }
-    static const char* Name();
-};
+	template<> class bloc_index_func<4>
+	{
+	public:
+		enum { N = 2 };
+		static void split(int& index, int& modulo)
+		{
+			modulo = index & 3;
+			index = index >> 2;
+		}
+	};
 
-template <Size L, Size C, class real, typename IndexType>
-class matrix_bloc_traits < defaulttype::Mat<L,C,real>, IndexType>
-{
-public:
-    typedef defaulttype::Mat<L,C,real> Bloc;
-    typedef real Real;
-    enum { NL = L };
-    enum { NC = C };
-    static Real& v(Bloc& b, Index row, Index col) { return b[row][col]; }
-    static const Real& v(const Bloc& b, Index row, Index col) { return b[row][col]; }
-    static void clear(Bloc& b) { b.clear(); }
-    static bool empty(const Bloc& b)
-    {
-        for (Index i=0; i<NL; ++i)
-            for (Index j=0; j<NC; ++j)
-                if (b[i][j] != 0) return false;
-        return true;
-    }
-    static void invert(Bloc& result, const Bloc& b) { result.invert(b); }
+	template<> class bloc_index_func<8>
+	{
+	public:
+		enum { N = 2 };
+		static void split(int& index, int& modulo)
+		{
+			modulo = index & 7;
+			index = index >> 3;
+		}
+	};
 
-    static void split_row_index(IndexType& index, IndexType& modulo) { bloc_index_func<NL, IndexType>::split(index, modulo); }
-    static void split_col_index(IndexType& index, IndexType& modulo) { bloc_index_func<NC, IndexType>::split(index, modulo); }
 
-    static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return matrix_bloc_traits<Real, IndexType>::getElementType(); }
-    static const char* Name();
-};
+	// by default, supposing T is a defaulttype::Mat (usefull for type derivated from defaulttype::Mat)
+	template<class T>
+	class matrix_bloc_traits
+	{
+	public:
+		typedef T Bloc;
+		typedef T BlocTranspose;
 
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<1,1,float >, int >::Name() { return "1f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<1,1,double>, int >::Name() { return "1d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<2,2,float >, int >::Name() { return "2f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<2,2,double>, int >::Name() { return "2d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<3,3,float >, int >::Name() { return "3f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<3,3,double>, int >::Name() { return "3d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<4,4,float >, int >::Name() { return "4f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<4,4,double>, int >::Name() { return "4d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<6,6,float >, int >::Name() { return "6f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<6,6,double>, int >::Name() { return "6d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<8,8,float >, int >::Name() { return "8f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<8,8,double>, int >::Name() { return "8d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<9,9,float >, int >::Name() { return "9f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<9,9,double>, int >::Name() { return "9d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<12,12,float >, int >::Name() { return "12f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<12,12,double>, int >::Name() { return "12d"; }
+		typedef typename T::Real Real;
+		enum { NL = T::nbLines };
+		enum { NC = T::nbCols };
+		static const Real& v(const Bloc& b, int row, int col) { return b[row][col]; }
+		static void vset(Bloc& b, int row, int col, Real val) { b[row][col] = val; }
+		static void vadd(Bloc& b, int row, int col, Real val) { b[row][col] += val; }
+		static void clear(Bloc& b) { b.clear(); }
+		static bool empty(const Bloc& b)
+		{
+			for (int i = 0; i < NL; ++i)
+				for (int j = 0; j < NC; ++j)
+					if (b[i][j] != 0) return false;
+			return true;
+		}
+		static void invert(Bloc& result, const Bloc& b) { result.invert(b); }
 
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<1,1,float >, Size >::Name() { return "1f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<1,1,double>, Size >::Name() { return "1d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<2,2,float >, Size >::Name() { return "2f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<2,2,double>, Size >::Name() { return "2d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<3,3,float >, Size >::Name() { return "3f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<3,3,double>, Size >::Name() { return "3d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<4,4,float >, Size >::Name() { return "4f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<4,4,double>, Size >::Name() { return "4d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<6,6,float >, Size >::Name() { return "6f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<6,6,double>, Size >::Name() { return "6d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<8,8,float >, Size >::Name() { return "8f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<8,8,double>, Size >::Name() { return "8d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<9,9,float >, Size >::Name() { return "9f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<9,9,double>, Size >::Name() { return "9d"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<12,12,float >, Size >::Name() { return "12f"; }
-template<> inline const char* matrix_bloc_traits<defaulttype::Mat<12,12,double>, Size >::Name() { return "12d"; }
+		static BlocTranspose transposed(const Bloc& b) { return b.transposed(); }
 
-template <typename IndexType>
-class matrix_bloc_traits < float, IndexType >
-{
-public:
-    typedef float Bloc;
-    typedef float Real;
-    enum { NL = 1 };
-    enum { NC = 1 };
-    static Real& v(Bloc& b, IndexType, IndexType) { return b; }
-    static const Real& v(const Bloc& b, IndexType, IndexType) { return b; }
-    static void clear(Bloc& b) { b = 0; }
-    static bool empty(const Bloc& b)
-    {
-        return b == 0;
-    }
-    static void invert(Bloc& result, const Bloc& b) { result = 1.0f/b; }
+		static void transpose(BlocTranspose& res, const Bloc& b) { res.transpose(b); }
 
-    static void split_row_index(IndexType& index, IndexType& modulo) { bloc_index_func<NL, IndexType>::split(index, modulo); }
-    static void split_col_index(IndexType& index, IndexType& modulo) { bloc_index_func<NC, IndexType>::split(index, modulo); }
+		static void split_row_index(int& index, int& modulo) { bloc_index_func<NL>::split(index, modulo); }
+		static void split_col_index(int& index, int& modulo) { bloc_index_func<NC>::split(index, modulo); }
 
-    static const char* Name() { return "f"; }
-    static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return sofa::defaulttype::BaseMatrix::ELEMENT_FLOAT; }
-    static IndexType getElementSize() { return sizeof(Real); }
-};
+		static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return matrix_bloc_traits<Real>::getElementType(); }
+		static const char* Name();
+	};
 
-template <typename IndexType>
-class matrix_bloc_traits < double, IndexType >
-{
-public:
-    typedef double Bloc;
-    typedef double Real;
-    enum { NL = 1 };
-    enum { NC = 1 };
-    static Real& v(Bloc& b, IndexType, IndexType) { return b; }
-    static const Real& v(const Bloc& b, IndexType, IndexType) { return b; }
-    static void clear(Bloc& b) { b = 0; }
-    static bool empty(const Bloc& b)
-    {
-        return b == 0;
-    }
-    static void invert(Bloc& result, const Bloc& b) { result = 1.0/b; }
+	template <int L, int C, class real>
+	class matrix_bloc_traits < defaulttype::Mat<L, C, real> >
+	{
+	public:
+		typedef defaulttype::Mat<L, C, real> Bloc;
+		typedef defaulttype::Mat<C, L, real> BlocTranspose;
 
-    static void split_row_index(IndexType& index, IndexType& modulo) { bloc_index_func<NL, IndexType>::split(index, modulo); }
-    static void split_col_index(IndexType& index, IndexType& modulo) { bloc_index_func<NC, IndexType>::split(index, modulo); }
+		typedef real Real;
+		enum { NL = L };
+		enum { NC = C };
+		static const Real& v(const Bloc& b, int row, int col) { return b[row][col]; }
+		static void vset(Bloc& b, int row, int col, Real val) { b[row][col] = val; }
+		static void vadd(Bloc& b, int row, int col, Real val) { b[row][col] += val; }
+		static void clear(Bloc& b) { b.clear(); }
+		static bool empty(const Bloc& b)
+		{
+			for (int i = 0; i < NL; ++i)
+				for (int j = 0; j < NC; ++j)
+					if (b[i][j] != 0) return false;
+			return true;
+		}
+		static void invert(Bloc& result, const Bloc& b) { result.invert(b); }
 
-    static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return sofa::defaulttype::BaseMatrix::ELEMENT_FLOAT; }
-    static const char* Name() { return "d"; }
-};
+		static BlocTranspose transposed(const Bloc& b) { return b.transposed(); }
 
-template <typename IndexType>
-class matrix_bloc_traits < int, IndexType >
-{
-public:
-    typedef float Bloc;
-    typedef float Real;
-    enum { NL = 1 };
-    enum { NC = 1 };
-    static Real& v(Bloc& b, int, int) { return b; }
-    static const Real& v(const Bloc& b, int, int) { return b; }
-    static void clear(Bloc& b) { b = 0; }
-    static bool empty(const Bloc& b)
-    {
-        return b == 0;
-    }
-    static void invert(Bloc& result, const Bloc& b) { result = 1.0f/b; }
+		static void transpose(BlocTranspose& res, const Bloc& b) { res.transpose(b); }
 
-    static void split_row_index(int& index, int& modulo) { bloc_index_func<NL, IndexType>::split(index, modulo); }
-    static void split_col_index(int& index, int& modulo) { bloc_index_func<NC, IndexType>::split(index, modulo); }
+		static void split_row_index(int& index, int& modulo) { bloc_index_func<NL>::split(index, modulo); }
+		static void split_col_index(int& index, int& modulo) { bloc_index_func<NC>::split(index, modulo); }
 
-    static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return sofa::defaulttype::BaseMatrix::ELEMENT_INT; }
-    static const char* Name() { return "f"; }
-};
+		static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return matrix_bloc_traits<Real>::getElementType(); }
+		static const char* Name();
+	};
+
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<1, 1, float > >::Name() { return "1f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<1, 1, double> >::Name() { return "1d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<2, 2, float > >::Name() { return "2f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<2, 2, double> >::Name() { return "2d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<2, 3, float > >::Name() { return "2x3f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<2, 3, double> >::Name() { return "2x3d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<3, 2, float > >::Name() { return "3x2f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<3, 2, double> >::Name() { return "3x2d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<3, 3, float > >::Name() { return "3f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<3, 3, double> >::Name() { return "3d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<4, 4, float > >::Name() { return "4f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<4, 4, double> >::Name() { return "4d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<6, 6, float > >::Name() { return "6f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<6, 6, double> >::Name() { return "6d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<3, 6, float > >::Name() { return "3x6f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<3, 6, double> >::Name() { return "3x6d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<6, 3, float > >::Name() { return "6x3f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<6, 3, double> >::Name() { return "6x3d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<8, 8, float > >::Name() { return "8f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<8, 8, double> >::Name() { return "8d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<9, 9, float > >::Name() { return "9f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<9, 9, double> >::Name() { return "9d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<12, 12, float > >::Name() { return "12f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Mat<12, 12, double> >::Name() { return "12d"; }
+
+	template <>
+	class matrix_bloc_traits < float >
+	{
+	public:
+		typedef float Bloc;
+		typedef float Real;
+		typedef Bloc BlocTranspose;
+
+		enum { NL = 1 };
+		enum { NC = 1 };
+		static const Real& v(const Bloc& b, int, int) { return b; }
+		static void vset(Bloc& b, int, int, Real val) { b = val; }
+		static void vadd(Bloc& b, int, int, Real val) { b += val; }
+		static void clear(Bloc& b) { b = 0; }
+		static bool empty(const Bloc& b)
+		{
+			return b == 0;
+		}
+		static void invert(Bloc& result, const Bloc& b) { result = 1.0f / b; }
+
+		static Bloc transposed(const Bloc& b) { return b; }
+
+		static void transpose(Bloc& res, const Bloc& b) { res = b; }
+
+		static void split_row_index(int& index, int& modulo) { bloc_index_func<NL>::split(index, modulo); }
+		static void split_col_index(int& index, int& modulo) { bloc_index_func<NC>::split(index, modulo); }
+
+		static const char* Name() { return "f"; }
+		static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return sofa::defaulttype::BaseMatrix::ELEMENT_FLOAT; }
+		static std::size_t getElementSize() { return sizeof(Real); }
+	};
+
+	template <>
+	class matrix_bloc_traits < double >
+	{
+	public:
+		typedef double Bloc;
+		typedef double Real;
+		typedef Bloc BlocTranspose;
+
+		enum { NL = 1 };
+		enum { NC = 1 };
+		static const Real& v(const Bloc& b, int, int) { return b; }
+		static void vset(Bloc& b, int, int, Real val) { b = val; }
+		static void vadd(Bloc& b, int, int, Real val) { b += val; }
+		static void clear(Bloc& b) { b = 0; }
+		static bool empty(const Bloc& b)
+		{
+			return b == 0;
+		}
+		static void invert(Bloc& result, const Bloc& b) { result = 1.0 / b; }
+
+		static Bloc transposed(const Bloc& b) { return b; }
+
+		static void transpose(Bloc& res, const Bloc& b) { res = b; }
+
+		static void split_row_index(int& index, int& modulo) { bloc_index_func<NL>::split(index, modulo); }
+		static void split_col_index(int& index, int& modulo) { bloc_index_func<NC>::split(index, modulo); }
+
+		static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return sofa::defaulttype::BaseMatrix::ELEMENT_FLOAT; }
+		static const char* Name() { return "d"; }
+	};
+
+	template <>
+	class matrix_bloc_traits < int >
+	{
+	public:
+		typedef float Bloc;
+		typedef float Real;
+		typedef Bloc BlocTranspose;
+
+		enum { NL = 1 };
+		enum { NC = 1 };
+		static const Real& v(const Bloc& b, int, int) { return b; }
+		static void vset(Bloc& b, int, int, Real val) { b = val; }
+		static void vadd(Bloc& b, int, int, Real val) { b += val; }
+		static void clear(Bloc& b) { b = 0; }
+		static bool empty(const Bloc& b)
+		{
+			return b == 0;
+		}
+		static void invert(Bloc& result, const Bloc& b) { result = 1.0f / b; }
+
+		static Bloc transposed(const Bloc& b) { return b; }
+
+		static void transpose(Bloc& res, const Bloc& b) { res = b; }
+
+		static void split_row_index(int& index, int& modulo) { bloc_index_func<NL>::split(index, modulo); }
+		static void split_col_index(int& index, int& modulo) { bloc_index_func<NC>::split(index, modulo); }
+
+		static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return sofa::defaulttype::BaseMatrix::ELEMENT_INT; }
+		static const char* Name() { return "f"; }
+	};
+
+	template <int N, class T>
+	class matrix_bloc_traits < sofa::defaulttype::Vec<N, T> >
+	{
+	public:
+		typedef sofa::defaulttype::Vec<N, T> Bloc;
+		typedef T Real;
+		typedef Bloc BlocTranspose;
+
+		enum { NL = 1 };
+		enum { NC = N };
+
+		static const Real& v(const Bloc& b, int /*row*/, int col) { return b[col]; }
+		static void vset(Bloc& b, int /*row*/, int col, Real v) { b[col] = v; }
+		static void vadd(Bloc& b, int /*row*/, int col, Real v) { b[col] += v; }
+		static void clear(Bloc& b) { b.clear(); }
+		static bool empty(const Bloc& b)
+		{
+			for (int i = 0; i < NC; ++i)
+				if (b[i] != 0) return false;
+			return true;
+		}
+
+		static Bloc transposed(const Bloc& b) { return b; }
+
+		static void transpose(Bloc& res, const Bloc& b) { res = b; }
+
+		static sofa::defaulttype::BaseMatrix::ElementType getElementType() { return matrix_bloc_traits<Real>::getElementType(); }
+		static const char* Name();
+	};
+
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<1, float > >::Name() { return "V1f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<1, double> >::Name() { return "V1d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<2, float > >::Name() { return "V2f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<2, double> >::Name() { return "V2d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<3, float > >::Name() { return "V3f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<3, double> >::Name() { return "V3d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<4, float > >::Name() { return "V4f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<4, double> >::Name() { return "V4d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<5, float > >::Name() { return "V5f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<5, double> >::Name() { return "V5d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<6, float > >::Name() { return "V6f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<6, double> >::Name() { return "V6d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<7, float > >::Name() { return "V7f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<7, double> >::Name() { return "V7d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<8, float > >::Name() { return "V8f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<8, double> >::Name() { return "V8d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<9, float > >::Name() { return "V9f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<9, double> >::Name() { return "V9d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<10, float > >::Name() { return "V10f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<10, double> >::Name() { return "V10d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<11, float > >::Name() { return "V11f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<11, double> >::Name() { return "V11d"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<12, float > >::Name() { return "V12f"; }
+	template<> inline const char* matrix_bloc_traits<defaulttype::Vec<12, double> >::Name() { return "V12d"; }
 
 } // namespace sofa::component::linearsolver

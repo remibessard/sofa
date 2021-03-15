@@ -21,14 +21,13 @@
 ******************************************************************************/
 #pragma once
 #include <SofaSimpleFem/TetrahedronFEMForceField.h>
-#include <sofa/core/behavior/MultiMatrixAccessor.h>
 #include <sofa/core/behavior/RotationMatrix.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <SofaBaseTopology/GridTopology.h>
 #include <sofa/helper/decompose.h>
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
 #include <sofa/simulation/AnimateBeginEvent.h>
 #include <sofa/simulation/AnimateEndEvent.h>
+#include <SofaBaseLinearSolver/BlocMatrixWriter.h>
 
 
 namespace sofa::component::forcefield
@@ -1967,154 +1966,72 @@ void TetrahedronFEMForceField<DataTypes>::draw(const core::visual::VisualParams*
 template<class DataTypes>
 void TetrahedronFEMForceField<DataTypes>::addKToMatrix(const core::MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix )
 {
+    sofa::component::linearsolver::BlocMatrixWriter<MatBloc> writer;
     sofa::core::behavior::MultiMatrixAccessor::MatrixRef r = matrix->getMatrix(this->mstate);
     if (r)
-        addKToMatrix(r.matrix, mparams->kFactorIncludingRayleighDamping(this->rayleighStiffness.getValue()), r.offset);
+        writer.addKToMatrix(this, mparams, r);
     else dmsg_error() << "The function addKToMatrix found no valid matrix accessor." ;
 }
 
-
 template<class DataTypes>
-void TetrahedronFEMForceField<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatrix *mat, SReal k, unsigned int &offset)
+template<class MatrixWriter>
+void TetrahedronFEMForceField<DataTypes>::addKToMatrixT(const core::MechanicalParams* mparams, MatrixWriter m)
 {
     // Build Matrix Block for this ForceField
-    int i,j,n1, n2, row, column, ROW, COLUMN , IT;
+    int i,j,n1, n2, IT;
+
+    const Real k=(Real)mparams->kFactor();
 
     Transformation Rot;
     StiffnessMatrix JKJt,tmp;
 
     typename VecElement::const_iterator it;
 
-    Index noeud1, noeud2;
-    int offd3 = offset/3;
-
     Rot[0][0]=Rot[1][1]=Rot[2][2]=1;
     Rot[0][1]=Rot[0][2]=0;
     Rot[1][0]=Rot[1][2]=0;
     Rot[2][0]=Rot[2][1]=0;
-
-    if (sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<3,3,double> > * crsmat = dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<3,3,double> > * >(mat))
+    for (it = _indexedElements->begin(), IT = 0; it != _indexedElements->end(); ++it, ++IT)
     {
-        for(it = _indexedElements->begin(), IT=0 ; it != _indexedElements->end() ; ++it,++IT)
+        if (method == SMALL) computeStiffnessMatrix(JKJt, tmp, materialsStiffnesses[IT], strainDisplacements[IT], Rot);
+        else computeStiffnessMatrix(JKJt, tmp, materialsStiffnesses[IT], strainDisplacements[IT], rotations[IT]);
+
+        defaulttype::Mat<3, 3, double> tmpBlock[4][4];
+        // find index of node 1
+        for (n1=0; n1 < 4; n1++)
         {
-            if (method == SMALL) computeStiffnessMatrix(JKJt,tmp,materialsStiffnesses[IT], strainDisplacements[IT],Rot);
-            else computeStiffnessMatrix(JKJt,tmp,materialsStiffnesses[IT], strainDisplacements[IT],rotations[IT]);
-
-            defaulttype::Mat<3,3,double> tmpBlock[4][4];
-            // find index of node 1
-            for (n1=0; n1<4; n1++)
+            for (i=0; i < 3; i++)
             {
-                for(i=0; i<3; i++)
+                for (n2=0; n2 < 4; n2++)
                 {
-                    for (n2=0; n2<4; n2++)
+                    for (j=0; j < 3; j++)
                     {
-                        for (j=0; j<3; j++)
-                        {
-                            tmpBlock[n1][n2][i][j] = - tmp[n1*3+i][n2*3+j]*k;
-                        }
-                    }
-                }
-            }
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[0],true) += tmpBlock[0][0];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[1],true) += tmpBlock[0][1];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[2],true) += tmpBlock[0][2];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[3],true) += tmpBlock[0][3];
-
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[0],true) += tmpBlock[1][0];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[1],true) += tmpBlock[1][1];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[2],true) += tmpBlock[1][2];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[3],true) += tmpBlock[1][3];
-
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[0],true) += tmpBlock[2][0];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[1],true) += tmpBlock[2][1];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[2],true) += tmpBlock[2][2];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[3],true) += tmpBlock[2][3];
-
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[0],true) += tmpBlock[3][0];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[1],true) += tmpBlock[3][1];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[2],true) += tmpBlock[3][2];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[3],true) += tmpBlock[3][3];
-        }
-    }
-    else if (sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<3,3,float> > * crsmat = dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<3,3,float> > * >(mat))
-    {
-        for(it = _indexedElements->begin(), IT=0 ; it != _indexedElements->end() ; ++it,++IT)
-        {
-            if (method == SMALL) computeStiffnessMatrix(JKJt,tmp,materialsStiffnesses[IT], strainDisplacements[IT],Rot);
-            else computeStiffnessMatrix(JKJt,tmp,materialsStiffnesses[IT], strainDisplacements[IT],rotations[IT]);
-
-            defaulttype::Mat<3,3,double> tmpBlock[4][4];
-            // find index of node 1
-            for (n1=0; n1<4; n1++)
-            {
-                for(i=0; i<3; i++)
-                {
-                    for (n2=0; n2<4; n2++)
-                    {
-                        for (j=0; j<3; j++)
-                        {
-                            tmpBlock[n1][n2][i][j] = - tmp[n1*3+i][n2*3+j]*k;
-                        }
-                    }
-                }
-            }
-
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[0],true) += tmpBlock[0][0];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[1],true) += tmpBlock[0][1];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[2],true) += tmpBlock[0][2];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[3],true) += tmpBlock[0][3];
-
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[0],true) += tmpBlock[1][0];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[1],true) += tmpBlock[1][1];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[2],true) += tmpBlock[1][2];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[3],true) += tmpBlock[1][3];
-
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[0],true) += tmpBlock[2][0];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[1],true) += tmpBlock[2][1];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[2],true) += tmpBlock[2][2];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[3],true) += tmpBlock[2][3];
-
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[0],true) += tmpBlock[3][0];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[1],true) += tmpBlock[3][1];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[2],true) += tmpBlock[3][2];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[3],true) += tmpBlock[3][3];
-        }
-    }
-    else
-    {
-        for(it = _indexedElements->begin(), IT=0 ; it != _indexedElements->end() ; ++it,++IT)
-        {
-            if (method == SMALL)
-                computeStiffnessMatrix(JKJt,tmp,materialsStiffnesses[IT], strainDisplacements[IT],Rot);
-            else
-                computeStiffnessMatrix(JKJt,tmp,materialsStiffnesses[IT], strainDisplacements[IT],rotations[IT]);
-
-            // find index of node 1
-            for (n1=0; n1<4; n1++)
-            {
-                noeud1 = (*it)[n1];
-
-                for(i=0; i<3; i++)
-                {
-                    ROW = offset+3*noeud1+i;
-                    row = 3*n1+i;
-                    // find index of node 2
-                    for (n2=0; n2<4; n2++)
-                    {
-                        noeud2 = (*it)[n2];
-
-                        for (j=0; j<3; j++)
-                        {
-                            COLUMN = offset+3*noeud2+j;
-                            column = 3*n2+j;
-                            mat->add(ROW, COLUMN, - tmp[row][column]*k);
-                        }
+                        tmpBlock[n1][n2][i][j] = -tmp[n1 * 3 + i][n2 * 3 + j] * k;
                     }
                 }
             }
         }
 
-    }
+        m.add((*it)[0], (*it)[0], tmpBlock[0][0]);
+        m.add((*it)[0], (*it)[1], tmpBlock[0][1]);
+        m.add((*it)[0], (*it)[2], tmpBlock[0][2]);
+        m.add((*it)[0], (*it)[3], tmpBlock[0][3]);
+
+        m.add((*it)[1], (*it)[0], tmpBlock[1][0]);
+        m.add((*it)[1], (*it)[1], tmpBlock[1][1]);
+        m.add((*it)[1], (*it)[2], tmpBlock[1][2]);
+        m.add((*it)[1], (*it)[3], tmpBlock[1][3]);
+
+        m.add((*it)[2], (*it)[0], tmpBlock[2][0]);
+        m.add((*it)[2], (*it)[1], tmpBlock[2][1]);
+        m.add((*it)[2], (*it)[2], tmpBlock[2][2]);
+        m.add((*it)[2], (*it)[3], tmpBlock[2][3]);
+
+        m.add((*it)[3], (*it)[0], tmpBlock[3][0]);
+        m.add((*it)[3], (*it)[1], tmpBlock[3][1]);
+        m.add((*it)[3], (*it)[2], tmpBlock[3][2]);
+        m.add((*it)[3], (*it)[3], tmpBlock[3][3]);
+	}
 }
 
 template<class DataTypes>
@@ -2151,7 +2068,8 @@ void TetrahedronFEMForceField<DataTypes>::addSubKToMatrix(sofa::defaulttype::Bas
         }
     }
 
-    if (sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<3,3,double> > * crsmat = dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<3,3,double> > * >(mat)) {
+    if (sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<3,3,double> > * crsmat = 
+        dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<3,3,double> > * >(mat)) {
         for(unsigned e = 0;e< itTetraBuild.size();e++) {
             IT = itTetraBuild[e];
             it = _indexedElements->begin() + IT;
@@ -2172,27 +2090,28 @@ void TetrahedronFEMForceField<DataTypes>::addSubKToMatrix(sofa::defaulttype::Bas
                     }
                 }
             }
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[0],true) += tmpBlock[0][0];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[1],true) += tmpBlock[0][1];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[2],true) += tmpBlock[0][2];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[3],true) += tmpBlock[0][3];
+            crsmat->addBloc(offd3 + (*it)[0], offd3 + (*it)[0], tmpBlock[0][0]);
+            crsmat->addBloc(offd3 + (*it)[0], offd3 + (*it)[1], tmpBlock[0][1]);
+            crsmat->addBloc(offd3 + (*it)[0], offd3 + (*it)[2], tmpBlock[0][2]);
+            crsmat->addBloc(offd3 + (*it)[0], offd3 + (*it)[3], tmpBlock[0][3]);
 
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[0],true) += tmpBlock[1][0];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[1],true) += tmpBlock[1][1];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[2],true) += tmpBlock[1][2];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[3],true) += tmpBlock[1][3];
+            crsmat->addBloc(offd3 + (*it)[1], offd3 + (*it)[0], tmpBlock[1][0]);
+            crsmat->addBloc(offd3 + (*it)[1], offd3 + (*it)[1], tmpBlock[1][1]);
+            crsmat->addBloc(offd3 + (*it)[1], offd3 + (*it)[2], tmpBlock[1][2]);
+            crsmat->addBloc(offd3 + (*it)[1], offd3 + (*it)[3], tmpBlock[1][3]);
 
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[0],true) += tmpBlock[2][0];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[1],true) += tmpBlock[2][1];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[2],true) += tmpBlock[2][2];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[3],true) += tmpBlock[2][3];
+            crsmat->addBloc(offd3 + (*it)[2], offd3 + (*it)[0], tmpBlock[2][0]);
+            crsmat->addBloc(offd3 + (*it)[2], offd3 + (*it)[1], tmpBlock[2][1]);
+            crsmat->addBloc(offd3 + (*it)[2], offd3 + (*it)[2], tmpBlock[2][2]);
+            crsmat->addBloc(offd3 + (*it)[2], offd3 + (*it)[3], tmpBlock[2][3]);
 
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[0],true) += tmpBlock[3][0];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[1],true) += tmpBlock[3][1];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[2],true) += tmpBlock[3][2];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[3],true) += tmpBlock[3][3];
+            crsmat->addBloc(offd3 + (*it)[3], offd3 + (*it)[0], tmpBlock[3][0]);
+            crsmat->addBloc(offd3 + (*it)[3], offd3 + (*it)[1], tmpBlock[3][1]);
+            crsmat->addBloc(offd3 + (*it)[3], offd3 + (*it)[2], tmpBlock[3][2]);
+            crsmat->addBloc(offd3 + (*it)[3], offd3 + (*it)[3], tmpBlock[3][3]);
         }
-    } else if (sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<3,3,float> > * crsmat = dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<3,3,float> > * >(mat)) {
+    } else if (sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<3,3,float> > * crsmat = 
+		dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<3,3,float> > * >(mat)) {
         for(unsigned e = 0;e< itTetraBuild.size();e++) {
             IT = itTetraBuild[e];
             it = _indexedElements->begin() + IT;
@@ -2213,25 +2132,25 @@ void TetrahedronFEMForceField<DataTypes>::addSubKToMatrix(sofa::defaulttype::Bas
                     }
                 }
             }
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[0],true) += tmpBlock[0][0];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[1],true) += tmpBlock[0][1];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[2],true) += tmpBlock[0][2];
-            *crsmat->wbloc(offd3 + (*it)[0], offd3 + (*it)[3],true) += tmpBlock[0][3];
+            crsmat->addBloc(offd3 + (*it)[0], offd3 + (*it)[0], tmpBlock[0][0]);
+            crsmat->addBloc(offd3 + (*it)[0], offd3 + (*it)[1], tmpBlock[0][1]);
+            crsmat->addBloc(offd3 + (*it)[0], offd3 + (*it)[2], tmpBlock[0][2]);
+            crsmat->addBloc(offd3 + (*it)[0], offd3 + (*it)[3], tmpBlock[0][3]);
 
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[0],true) += tmpBlock[1][0];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[1],true) += tmpBlock[1][1];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[2],true) += tmpBlock[1][2];
-            *crsmat->wbloc(offd3 + (*it)[1], offd3 + (*it)[3],true) += tmpBlock[1][3];
+            crsmat->addBloc(offd3 + (*it)[1], offd3 + (*it)[0], tmpBlock[1][0]);
+            crsmat->addBloc(offd3 + (*it)[1], offd3 + (*it)[1], tmpBlock[1][1]);
+            crsmat->addBloc(offd3 + (*it)[1], offd3 + (*it)[2], tmpBlock[1][2]);
+            crsmat->addBloc(offd3 + (*it)[1], offd3 + (*it)[3], tmpBlock[1][3]);
 
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[0],true) += tmpBlock[2][0];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[1],true) += tmpBlock[2][1];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[2],true) += tmpBlock[2][2];
-            *crsmat->wbloc(offd3 + (*it)[2], offd3 + (*it)[3],true) += tmpBlock[2][3];
+            crsmat->addBloc(offd3 + (*it)[2], offd3 + (*it)[0], tmpBlock[2][0]);
+            crsmat->addBloc(offd3 + (*it)[2], offd3 + (*it)[1], tmpBlock[2][1]);
+            crsmat->addBloc(offd3 + (*it)[2], offd3 + (*it)[2], tmpBlock[2][2]);
+            crsmat->addBloc(offd3 + (*it)[2], offd3 + (*it)[3], tmpBlock[2][3]);
 
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[0],true) += tmpBlock[3][0];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[1],true) += tmpBlock[3][1];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[2],true) += tmpBlock[3][2];
-            *crsmat->wbloc(offd3 + (*it)[3], offd3 + (*it)[3],true) += tmpBlock[3][3];
+            crsmat->addBloc(offd3 + (*it)[3], offd3 + (*it)[0], tmpBlock[3][0]);
+            crsmat->addBloc(offd3 + (*it)[3], offd3 + (*it)[1], tmpBlock[3][1]);
+            crsmat->addBloc(offd3 + (*it)[3], offd3 + (*it)[2], tmpBlock[3][2]);
+            crsmat->addBloc(offd3 + (*it)[3], offd3 + (*it)[3], tmpBlock[3][3]);
         }
     } else {
         for(unsigned e = 0;e< itTetraBuild.size();e++) {

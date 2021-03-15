@@ -331,6 +331,8 @@ void BarycentricMapperTetrahedronSetTopologyRigid<In,Out>::applyJT( typename In:
 template<class In, class Out>
 const sofa::defaulttype::BaseMatrix* BarycentricMapperTetrahedronSetTopologyRigid<In,Out>::getJ(int outSize, int inSize)
 {
+	return nullptr;
+#if 0
     if (outSize > 0 && map.getValue().size() == 0)
     {
         msg_error() << "Maps not created yet" ;
@@ -392,6 +394,7 @@ const sofa::defaulttype::BaseMatrix* BarycentricMapperTetrahedronSetTopologyRigi
     updateJ = false;
 
     return matrixJ;
+#endif
 } // getJ
 
 

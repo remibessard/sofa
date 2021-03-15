@@ -41,7 +41,7 @@
 #include <algorithm>
 #include <iterator>
 #include <sofa/helper/AdvancedTimer.h>
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
+#include <SofaBaseLinearSolver/CompressedRowSparseMatrixMechanical.h>
 
 namespace sofa::component::forcefield
 {
@@ -545,13 +545,14 @@ void StandardTetrahedralFEMForceField<DataTypes>::addDForce(const core::Mechanic
 template<class DataTypes>
 void  StandardTetrahedralFEMForceField<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatrix * mat, SReal kFact, unsigned int &offset)
 {
+#if 0
     unsigned int nbEdges=m_topology->getNbEdges();
     const helper::vector< Edge> &edgeArray=m_topology->getEdges() ;
     edgeInformationVector& edgeInf = *(edgeInfo.beginEdit());
     EdgeInformation *einfo;
     unsigned int i,j,N0, N1, l;
     Index noeud0, noeud1;
-    if (sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<3,3,Real> > * crsmat = dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrix<defaulttype::Mat<3,3,Real> > * >(mat))
+    if (sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<3,3,Real> > * crsmat = dynamic_cast<sofa::component::linearsolver::CompressedRowSparseMatrixMechanical<defaulttype::Mat<3,3,Real> > * >(mat))
     {
         int offd3 = offset/3;
 
@@ -596,6 +597,7 @@ void  StandardTetrahedralFEMForceField<DataTypes>::addKToMatrix(sofa::defaulttyp
         }
     }
     edgeInfo.endEdit();
+#endif
 }
 
 template<class DataTypes>

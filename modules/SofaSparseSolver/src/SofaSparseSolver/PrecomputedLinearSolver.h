@@ -30,7 +30,7 @@
 #include <SofaBaseLinearSolver/FullMatrix.h>
 #include <sofa/helper/map.h>
 #include <cmath>
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
+#include <SofaBaseLinearSolver/CompressedRowSparseMatrixMechanical.h>
 #include <fstream>
 
 namespace sofa
@@ -136,7 +136,7 @@ private :
 };
 
 #if !defined(SOFA_COMPONENT_LINEARSOLVER_PRECOMPUTEDLINEARSOLVER_CPP)
-extern template class SOFA_SOFASPARSESOLVER_API PrecomputedLinearSolver< CompressedRowSparseMatrix<double> , FullVector<double> >;
+extern template class SOFA_SOFASPARSESOLVER_API PrecomputedLinearSolver< CompressedRowSparseMatrixMechanical<double> , FullVector<double> >;
 #endif
 
 } // namespace linearsolver

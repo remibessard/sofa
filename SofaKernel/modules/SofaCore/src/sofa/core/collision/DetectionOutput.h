@@ -41,7 +41,7 @@ namespace collision
  *  \brief Abstract description of a set of contact point.
  */
 
-//#define DETECTIONOUTPUT_BARYCENTRICINFO
+#define DETECTIONOUTPUT_BARYCENTRICINFO
 
 class DetectionOutputVector
 {

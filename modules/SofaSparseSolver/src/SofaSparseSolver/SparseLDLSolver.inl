@@ -30,7 +30,7 @@
 #include <sofa/core/behavior/LinearSolver.h>
 #include <cmath>
 #include <sofa/helper/system/thread/CTime.h>
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.inl>
+#include <SofaBaseLinearSolver/CompressedRowSparseMatrixMechanical.inl>
 #include <fstream>
 #include <iomanip>      // std::setprecision
 #include <string>
