@@ -54,7 +54,6 @@ inline int MeshNewProximityIntersection::doIntersectionLineLine(SReal dist2, con
 	detection->baryCoords[0] = defaulttype::Vector3(alpha1, 0, 0);
 	detection->baryCoords[1] = defaulttype::Vector3(alpha2, 0, 0);
 #endif
-	std::cout << "ll ";
     //detection->value -= contactDist;
     return 1;
 }
