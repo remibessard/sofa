@@ -26,6 +26,7 @@
 #include <sofa/simulation/Simulation.h>
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/simulation/UpdateContextVisitor.h>
+#include <sofa/simulation/Node.h>
 #include <sofa/helper/system/thread/CTime.h>
 #include <iostream>
 #include <sstream>
@@ -96,8 +97,11 @@ int BatchGUI::mainLoop()
 
         sofa::helper::AdvancedTimer::begin("Animate");
         sofa::simulation::getSimulation()->animate(groot.get());
-	currentSimulation()->getContext()->setAnimate(false);
-        msg_info("BatchGUI") << "Processing." << sofa::helper::AdvancedTimer::end("Animate", groot.get()) << msgendl;
+
+
+		currentSimulation()->getContext()->setAnimate(false);
+        sofa::helper::AdvancedTimer::end("Animate");
+        msg_info("BatchGUI") << "Processing." << msgendl;
         sofa::simulation::Visitor::ctime_t rtfreq = sofa::helper::system::thread::CTime::getRefTicksPerSec();
         sofa::simulation::Visitor::ctime_t tfreq = sofa::helper::system::thread::CTime::getTicksPerSec();
         sofa::simulation::Visitor::ctime_t rt = sofa::helper::system::thread::CTime::getRefTime();
@@ -251,6 +255,4 @@ int BatchGUI::RegisterGUIParameters(ArgumentParser* argumentParser)
     return 0;
 }
 
-} // namespace gui
-
-} // namespace sofaa
+} // namespace sofa::gui
