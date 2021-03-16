@@ -102,6 +102,7 @@ public:
     Data<SReal> f_rayleighMass; ///< Rayleigh damping coefficient related to mass, > 0
     Data<SReal> f_velocityDamping; ///< Velocity decay coefficient (no decay if null)
     Data<bool> f_firstOrder; ///< Use backward Euler scheme for first order ode system.
+    Data<bool> f_projectForce;
     Data<bool> d_trapezoidalScheme; ///< Optional: use the trapezoidal scheme instead of the implicit Euler scheme and get second order accuracy in time
     Data<bool> f_solveConstraint; ///< Apply ConstraintSolver (requires a ConstraintSolver in the same node as this solver, disabled by by default for now)
     Data<bool> d_threadSafeVisitor;
@@ -115,6 +116,11 @@ public:
 
     void solve (const core::ExecParams* params, SReal dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult) override;
 
+    virtual void assemble(const core::ExecParams* params /* PARAMS FIRST */, double dt);
+    
+    virtual void integrate(const core::ExecParams* params /* PARAMS FIRST */);
+    
+    virtual void updateXandV(const core::ExecParams* params  /* PARAMS FIRST */, double dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult);
     /// Given a displacement as computed by the linear system inversion, how much will it affect the velocity
     ///
     /// This method is used to compute the compliance for contact corrections
@@ -158,7 +164,7 @@ protected:
 
     /// the solution vector is stored for warm-start
     core::behavior::MultiVecDeriv x;
-
+    core::behavior::MultiVecDeriv b;
 };
 
 } // namespace sofa::component::odesolver

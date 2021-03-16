@@ -111,6 +111,9 @@ public:
     void m_setSystemMBKMatrix(SReal mFact, SReal bFact, SReal kFact);
     void m_setSystemRHVector(core::MultiVecDerivId v);
     void m_setSystemLHVector(core::MultiVecDerivId v);
+    void m_iterativeSolveSystem();
+    void m_directSolveSystem();
+    void m_writeSolution();
     void m_solveSystem();
     void m_print( std::ostream& out );
 

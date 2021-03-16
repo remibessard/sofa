@@ -96,25 +96,35 @@ template<class TMatrix, class TVector, class TThreadManager>
 bool SparseLDLSolver<TMatrix,TVector,TThreadManager>::addJMInvJtLocal(TMatrix * M, ResMatrixType * result,const JMatrixType * J, double fact) {
     if (J->rowSize()==0) return true;
 
+    Jlocal2global.clear();
+    for (typename SparseMatrix<Real>::LineConstIterator jit = J->begin(), jitend = J->end(); jit != jitend; ++jit) {
+        int l = jit->first;
+        Jlocal2global.push_back(l);
+    }
+    
+    if (Jlocal2global.empty()) return true;
+    
+    const unsigned int JlocalRowSize = (unsigned int)Jlocal2global.size();
+
     InvertData * data = (InvertData *) this->getMatrixInvertData(M);
 
     Jdense.clear();
     Jdense.resize(J->rowSize(),data->n);
     Jminv.resize(J->rowSize(),data->n);
 
-    for (typename SparseMatrix<Real>::LineConstIterator jit = J->begin() , jitend = J->end(); jit != jitend; ++jit) {
-        int l = jit->first;
-        Real * line = Jdense[l];
+    unsigned int localRow = 0;
+    for (typename SparseMatrix<Real>::LineConstIterator jit = J->begin(), jitend = J->end(); jit != jitend; ++jit, ++localRow) {
+        Real * line = Jdense[localRow];
         for (typename SparseMatrix<Real>::LElementConstIterator it = jit->second.begin(), i2end = jit->second.end(); it != i2end; ++it) {
             int col = data->invperm[it->first];
             double val = it->second;
 
-            line[col] = val;
+            line[col] = (Real)val;
         }
     }
 
     //Solve the lower triangular system
-    for (unsigned c=0;c<(unsigned)J->rowSize();c++) {
+    for (unsigned c = 0; c < JlocalRowSize; c++) {
         Real * line = Jdense[c];
 
         for (int j=0; j<data->n; j++) {
@@ -127,25 +137,28 @@ bool SparseLDLSolver<TMatrix,TVector,TThreadManager>::addJMInvJtLocal(TMatrix * 
     }
 
     //apply diagonal
-    for (unsigned j=0; j<(unsigned)J->rowSize(); j++) {
+    for (unsigned j = 0; j < JlocalRowSize; j++) {
         Real * lineD = Jdense[j];
         Real * lineM = Jminv[j];
-        for (unsigned i=0;i<(unsigned)J->colSize();i++) {
+        for (unsigned i = 0; i < (unsigned)data->n; i++) {
             lineM[i] = lineD[i] * data->invD[i];
         }
     }
 
-    for (unsigned j=0; j<(unsigned)J->rowSize(); j++) {
+    for (unsigned j = 0; j < JlocalRowSize; j++) {
         Real * lineJ = Jminv[j];
-        for (unsigned i=j;i<(unsigned)J->rowSize();i++) {
+        int globalRowJ = Jlocal2global[j];
+        for (unsigned i = j; i < JlocalRowSize; i++) {
             Real * lineI = Jdense[i];
+            int globalRowI = Jlocal2global[i];
 
             double acc = 0.0;
-            for (unsigned k=0;k<(unsigned)J->colSize();k++) {
+            for (unsigned k = 0; k < (unsigned)data->n; k++) {
                 acc += lineJ[k] * lineI[k];
             }
-            result->add(j,i,acc*fact);
-            if(i!=j) result->add(i,j,acc*fact);
+            acc *= fact;
+            result->add(globalRowJ, globalRowI, acc);
+            if (globalRowJ != globalRowI) result->add(globalRowI, globalRowJ, acc);
         }
     }
 

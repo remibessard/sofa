@@ -33,8 +33,8 @@ namespace linearsolver
 {
 
 int SparseLDLSolverClass = core::RegisterObject("Direct Linear Solver using a Sparse LDL^T factorization.")
-        .add< SparseLDLSolver< CompressedRowSparseMatrix<double>,FullVector<double> > >(true)
-        .add< SparseLDLSolver< CompressedRowSparseMatrix<defaulttype::Mat<3,3,double> >,FullVector<double> > >()
+        .add< SparseLDLSolver< CompressedRowSparseMatrix<double>,FullVector<double> > >()
+        .add< SparseLDLSolver< CompressedRowSparseMatrix<defaulttype::Mat<3,3,double> >,FullVector<double> > >(true)
 
 ;
 
