@@ -74,6 +74,7 @@ public :
 protected :
     SparseLDLSolver();
 
+    helper::vector<int> Jlocal2global;
     FullMatrix<Real> Jminv,Jdense;
     sofa::component::linearsolver::CompressedRowSparseMatrix<Real> Mfiltered;
 };

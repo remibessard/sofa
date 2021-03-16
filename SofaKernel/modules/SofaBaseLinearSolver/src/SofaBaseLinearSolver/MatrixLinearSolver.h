@@ -228,6 +228,9 @@ public:
     /// Solve the system as constructed using the previous methods
     void solveSystem() override;
 
+    /// write system resolution in mstates
+    virtual void writeSolution();
+
     /// Invert the system, this method is optional because it's call when solveSystem() is called for the first time
     void invertSystem() override;
 
@@ -400,6 +403,9 @@ void MatrixLinearSolver<GraphScatteredMatrix,GraphScatteredVector,NoThreadManage
 
 template<> SOFA_SOFABASELINEARSOLVER_API
 void MatrixLinearSolver<GraphScatteredMatrix,GraphScatteredVector,NoThreadManager>::solveSystem();
+
+template<> SOFA_SOFABASELINEARSOLVER_API
+void MatrixLinearSolver<GraphScatteredMatrix, GraphScatteredVector, NoThreadManager>::writeSolution();
 
 template<> SOFA_SOFABASELINEARSOLVER_API
 GraphScatteredVector* MatrixLinearSolver<GraphScatteredMatrix,GraphScatteredVector,NoThreadManager>::createPersistentVector();

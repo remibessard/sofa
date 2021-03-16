@@ -106,10 +106,10 @@ void MatrixLinearSolver<Matrix,Vector>::setSystemMBKMatrix(const core::Mechanica
 
     if (!this->frozen)
     {
-        SReal dim = 0;
-        simulation::MechanicalGetDimensionVisitor(mparams, &dim).execute(this->getContext());
-        currentGroup->systemSize = Size(dim);
-        currentGroup->matrixAccessor.setDoPrintInfo( this->f_printLog.getValue() ) ;
+        //SReal dim = 0;
+        //simulation::MechanicalGetDimensionVisitor(mparams, &dim).execute(this->getContext());
+        //currentGroup->systemSize = Size(dim);
+        //currentGroup->matrixAccessor.setDoPrintInfo( this->f_printLog.getValue() ) ;
 
         simulation::common::MechanicalOperations mops(mparams, this->getContext());
         if (!currentGroup->systemMatrix) currentGroup->systemMatrix = createMatrix();
@@ -162,9 +162,18 @@ template<class Matrix, class Vector>
 void MatrixLinearSolver<Matrix,Vector>::setSystemLHVector(core::MultiVecDerivId v)
 {
     currentGroup->solutionVecId = v;
-    if (!currentGroup->solutionVecId.isNull())
+    //if (!currentGroup->solutionVecId.isNull())
     {
         executeVisitor( simulation::MechanicalMultiVectorToBaseVectorVisitor( core::ExecParams::defaultInstance(), v, currentGroup->systemLHVector, &(currentGroup->matrixAccessor)) );
+    }
+}
+
+template<class Matrix, class Vector>
+void MatrixLinearSolver<Matrix, Vector>::writeSolution()
+{
+    if (!currentGroup->solutionVecId.isNull())
+    {
+        executeVisitor(simulation::MechanicalMultiVectorFromBaseVectorVisitor(core::ExecParams::defaultInstance(), currentGroup->solutionVecId, currentGroup->systemLHVector, &(currentGroup->matrixAccessor)));
     }
 }
 
@@ -177,10 +186,10 @@ void MatrixLinearSolver<Matrix,Vector>::solveSystem()
         currentGroup->needInvert = false;
     }
     this->solve(*currentGroup->systemMatrix, *currentGroup->systemLHVector, *currentGroup->systemRHVector);
-    if (!currentGroup->solutionVecId.isNull())
-    {
-        executeVisitor( simulation::MechanicalMultiVectorFromBaseVectorVisitor(core::ExecParams::defaultInstance(), currentGroup->solutionVecId, currentGroup->systemLHVector, &(currentGroup->matrixAccessor)) );
-    }
+    //if (!currentGroup->solutionVecId.isNull())
+    //{
+    //    executeVisitor( simulation::MechanicalMultiVectorFromBaseVectorVisitor(core::ExecParams::defaultInstance(), currentGroup->solutionVecId, currentGroup->systemLHVector, &(currentGroup->matrixAccessor)) );
+    //}
 }
 
 template<class Matrix, class Vector>
