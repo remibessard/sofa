@@ -194,14 +194,18 @@ void FreeMotionAnimationLoop::step(const sofa::core::ExecParams* params, SReal d
 
     // Free Motion
     {
-        ScopedAdvancedTimer timer("FreeMotion");
+        //ScopedAdvancedTimer timer("FreeMotion");
+        sofa::helper::AdvancedTimer::stepBegin("Freemotion");
         simulation::SolveVisitor freeMotion(params, dt, true);
         gnode->execute(&freeMotion);
+        sofa::helper::AdvancedTimer::stepEnd("Freemotion");
     }
 
-    
-    mop.projectResponse(freeVel);
-    mop.propagateDx(freeVel, true);
+    {
+        ScopedAdvancedTimer timer("Projection and propagation");
+        mop.projectResponse(freeVel);
+        mop.propagateDx(freeVel, true);
+    }
 
     if (cparams.constOrder() == core::ConstraintParams::POS ||
         cparams.constOrder() == core::ConstraintParams::POS_AND_VEL)
