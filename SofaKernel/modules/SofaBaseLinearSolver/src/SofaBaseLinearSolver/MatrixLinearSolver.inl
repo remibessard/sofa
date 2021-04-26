@@ -226,6 +226,7 @@ void MatrixLinearSolver<Matrix,Vector>::setSystemLHVector(core::MultiVecDerivId 
 
 template<class Matrix, class Vector>
 void MatrixLinearSolver<Matrix, Vector>::writeSolution()
+
 {
     for (unsigned int g = 0, nbg = getNbGroups(); g < nbg; ++g)
     {
