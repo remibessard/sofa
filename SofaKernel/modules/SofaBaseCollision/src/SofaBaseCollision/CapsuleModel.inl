@@ -183,8 +183,10 @@ void CapsuleCollisionModel<DataTypes>::draw(const core::visual::VisualParams* vp
         // Check topological modifications
         //const int npoints = _mstate->getSize()/2;
 
-        for (Size i=0; i<size; i++){
-            vparams->drawTool()->drawCapsule(point1(i),point2(i),(float)radius(i),col4f);
+        for (Size i = 0; i < size; i++) {
+            TCapsule<DataTypes> c(this, i);
+            if (c.isActive())
+                vparams->drawTool()->drawCapsule(point1(i), point2(i), (float)radius(i), col4f);
         }
 
         vparams->drawTool()->setLightingEnabled(false); //Disable lightning

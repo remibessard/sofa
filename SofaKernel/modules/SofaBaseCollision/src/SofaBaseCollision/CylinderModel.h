@@ -26,6 +26,9 @@
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/core/behavior/MechanicalState.h>
 
+#include <sofa/core/topology/BaseMeshTopology.h>
+
+
 namespace sofa::component::collision
 {
 
@@ -55,12 +58,13 @@ public:
 
     explicit TCylinder(const core::CollisionElementIterator& i);
 
-    Coord axis()const;
-
-    Real radius() const;
-
     Coord point1() const;
     Coord point2() const;
+    Coord axis() const;
+    Coord center() const;
+
+    Real radius() const; 
+    Real height() const;
 
     const Coord & v()const;
 };
@@ -70,20 +74,21 @@ public:
   *CylinderModel templated by RigidTypes (frames), direction is given by Y direction of the frame.
   */
 template< class TDataTypes>
-class CylinderCollisionModel : public core::CollisionModel
+class SOFA_SOFABASECOLLISION_API CylinderCollisionModel : public core::CollisionModel
 {
 public:
     SOFA_CLASS(SOFA_TEMPLATE(CylinderCollisionModel, TDataTypes), core::CollisionModel);
 
     typedef TDataTypes DataTypes;
     typedef DataTypes InDataTypes;
+
     typedef typename DataTypes::VecCoord VecCoord;
     typedef typename  DataTypes::VecDeriv VecDeriv;
     typedef typename DataTypes::CPos Coord;
     typedef typename DataTypes::Deriv Deriv;
     typedef typename DataTypes::Real Real;
     typedef typename DataTypes::VecReal VecReal;
-    typedef typename helper::vector<typename DataTypes::Vec3> VecAxisCoord;
+    typedef typename helper::vector<defaulttype::Vec3> VecAxisCoord;
 
     typedef TCylinder<DataTypes> Element;
     friend class TCylinder<DataTypes>;
@@ -117,7 +122,7 @@ public:
 
     Real radius(Index index) const;
 
-    const Coord & center(Index i)const;
+    Coord center(Index i) const;
 
     //Returns the direction of the cylinder at index index
     Coord axis(Index index)const;
@@ -134,14 +139,25 @@ public:
 
     Real defaultRadius()const;
 
-    const Coord & velocity(Index index)const;
+    const Coord velocity(Index index)const;
+
+    sofa::core::topology::BaseMeshTopology* getCollisionTopology() override
+    {
+        return l_topology.get();
+    }
 
     Data<VecReal>& writeRadii();
     Data<VecReal>& writeHeights();
     Data<VecAxisCoord>& writeLocalAxes();
 
+    /// Link to be set to the topology container in the component graph.
+    SingleLink<CylinderCollisionModel<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology;
+
 protected:
     core::behavior::MechanicalState<DataTypes>* m_mstate;
+    Topology* m_topology;
+    //PointCollisionModel<sofa::defaulttype::Vec3Types>* mpoints;
+    //LineLocalMinDistanceFilter *m_lmdFilter;
 };
 
 
@@ -158,11 +174,14 @@ inline TCylinder<DataTypes>::TCylinder(const core::CollisionElementIterator& i)
 
 
 using CylinderModel [[deprecated("The CylinderModel is now deprecated, please use CylinderCollisionModel instead. Compatibility stops at v20.06")]] = CylinderCollisionModel<sofa::defaulttype::Rigid3Types>;
-using Cylinder = TCylinder<sofa::defaulttype::Rigid3Types>;
+//using Cylinder = TCylinder<sofa::defaulttype::Rigid3Types>;
+using Cylinder = TCylinder<sofa::defaulttype::Vec3dTypes>;
 
 #if  !defined(SOFA_COMPONENT_COLLISION_CYLINDERCOLLISIONMODEL_CPP)
-extern template class SOFA_SOFABASECOLLISION_API TCylinder<defaulttype::Rigid3Types>;
-extern template class SOFA_SOFABASECOLLISION_API CylinderCollisionModel<defaulttype::Rigid3Types>;
+extern template class SOFA_SOFABASECOLLISION_API TCylinder<defaulttype::Vec3dTypes>;
+extern template class SOFA_SOFABASECOLLISION_API CylinderCollisionModel<defaulttype::Vec3dTypes>;
+//extern template class SOFA_SOFABASECOLLISION_API TCylinder<defaulttype::Rigid3Types>;
+//extern template class SOFA_SOFABASECOLLISION_API CylinderCollisionModel<defaulttype::Rigid3Types>;
 #endif
 
 } // namespace sofa::component::collision

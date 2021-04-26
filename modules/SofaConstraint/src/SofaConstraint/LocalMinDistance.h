@@ -24,12 +24,15 @@
 
 #include <SofaBaseCollision/BaseProximityIntersection.h>
 #include <sofa/helper/FnDispatcher.h>
+
 #include <SofaBaseCollision/SphereModel.h>
 #include <SofaMeshCollision/TriangleModel.h>
 #include <SofaMeshCollision/LineModel.h>
 #include <SofaMeshCollision/PointModel.h>
 #include <SofaBaseCollision/CubeModel.h>
 #include <SofaUserInteraction/RayModel.h>
+#include <SofaBaseCollision/CapsuleModel.h>
+#include <SofaBaseCollision/CylinderModel.h>
 
 namespace sofa::component::collision
 {
@@ -46,6 +49,15 @@ public:
     Data<double> coneFactor; ///< Factor for filtering cone angle computation
     Data<bool> useLMDFilters; ///< Use external cone computation (Work in Progress)
 
+    int m_nb;
+    defaulttype::Vector3 m_A;
+    defaulttype::Vector3 m_B;
+    defaulttype::Vector3 m_C;
+    defaulttype::Vector3 m_T1,m_T2,m_T3;
+    defaulttype::Vector3 m_P;
+    defaulttype::Vector3 m_H;
+    defaulttype::Vector3 m_X;
+    defaulttype::Vector3 m_N;
 
 protected:
     LocalMinDistance();
@@ -65,6 +77,19 @@ public:
     bool testIntersection(Ray&, Sphere&);
     bool testIntersection(Ray&, Triangle&);
 
+    bool testIntersection(Cylinder&, Point&);
+    //bool testIntersection(Cylinder&, Sphere&);
+    //bool testIntersection(Cylinder&, Line&);
+    //bool testIntersection(Cylinder&, Triangle&);
+    //bool testIntersection(Cylinder&, Cylinder&);
+
+    bool testIntersection(Capsule&, Point&);
+    //bool testIntersection(Capsule&, Sphere&);
+    bool testIntersection(Capsule&, Line&);
+    bool testIntersection(Capsule&, Triangle&);
+    //bool testIntersection(Capsule&, Capsule&);
+
+
     int computeIntersection(Cube&, Cube&, OutputVector*);
     int computeIntersection(Point&, Point&, OutputVector*);
     int computeIntersection(Sphere&, Point&, OutputVector*);
@@ -73,9 +98,23 @@ public:
     int computeIntersection(Line&, Sphere&, OutputVector*);
     int computeIntersection(Line&, Line&, OutputVector*);
     int computeIntersection(Triangle&, Point&, OutputVector*);
+    int doIntersectionTrianglePoint(SReal alarmDist, Triangle& e2, core::CollisionElementIterator& e1, const defaulttype::Vector3 p, OutputVector* contacts);
     int computeIntersection(Triangle&, Sphere&, OutputVector*);
     int computeIntersection(Ray&, Sphere&, OutputVector*);
     int computeIntersection(Ray&, Triangle&, OutputVector*);
+
+    int computeIntersection(Cylinder&, Point&, OutputVector*);
+    //int computeIntersection(Cylinder&, Sphere&, OutputVector*);
+    //int computeIntersection(Cylinder&, Line&, OutputVector*);
+    //int computeIntersection(Cylinder&, Triangle&, OutputVector*);
+    //int computeIntersection(Cylinder&, Cylinder&, OutputVector*);
+
+    int computeIntersection(Capsule&, Point&, OutputVector*);
+    //int computeIntersection(Capsule&, Sphere&, OutputVector*);
+    int computeIntersection(Capsule&, Line&, OutputVector*);
+    int doIntersectionCapsuleLine(Capsule& e2, core::CollisionElementIterator& e1, const defaulttype::Vector3 l1, const defaulttype::Vector3 l2, OutputVector* contacts);
+    int computeIntersection(Capsule&, Triangle&, OutputVector*);
+    //int computeIntersection(Capsule&, Capsule&, OutputVector*);
 
     /// These methods check the validity of a found intersection.
     /// According to the local configuration around the found intersected primitive,

@@ -234,10 +234,19 @@ void DefaultCollisionGroupManager::createGroups(core::objectmodel::BaseContext* 
         simulation::Node::SPtr group = contactGroup[i];
         while (group!=nullptr && mergedGroups.find(group.get())!=mergedGroups.end())
             group = mergedGroups[group.get()];
-        if (group!=nullptr)
-            contact->createResponse(group.get());
-        else
-            contact->createResponse(scene);
+        //if (group!=nullptr)
+        //    contact->createResponse(group.get());
+        //else
+        //    contact->createResponse(scene);
+
+        core::objectmodel::BaseContext* node = scene;
+        if (group != NULL)
+        {
+            node = group.get();
+        }
+        contact->createResponse(node);
+        //contact->computeResponse();
+        //contact->finalizeResponse(node);
     }
 
     // delete removed groups
@@ -282,6 +291,36 @@ simulation::Node* DefaultCollisionGroupManager::getIntegrationNode(core::Collisi
         return nullptr;
 
     simulation::Node* solvernode = static_cast<simulation::Node*>(listSolver.back()->getContext());
+    if (solvernode->linearSolver.empty())
+        return solvernode; // no linearsolver
+    core::behavior::BaseLinearSolver * linearSolver = solvernode->linearSolver[0];
+    if (!linearSolver->isMultiGroup())
+    {
+        //std::cout << "Linear solver " << linearSolver->getName() << " of CM " << model->getName() << " is not multi-group" << std::endl;
+        return solvernode;
+    }
+    // This solver handles multiple groups, we have to find which group contains this collision model
+    // First move up to the node of the initial mechanical object
+    while (node->mechanicalMapping && node->mechanicalMapping->getMechFrom()[0])
+        node = static_cast<simulation::Node*>(node->mechanicalMapping->getMechFrom()[0]->getContext());
+    // Then check if it is one of the child nodes of the solver node
+    for (simulation::Node::ChildIterator it = solvernode->child.begin(), itend = solvernode->child.end(); it != itend; ++it)
+        if (*it == node)
+        {
+            //std::cout << "Group of CM " << model->getName() << " is " << (*it)->getName() << " child of " << solvernode->getName() << std::endl;
+            return it->get();
+        }
+    // Then check if it is a child of one of the child nodes of the solver node
+    for (simulation::Node::ChildIterator it = solvernode->child.begin(), itend = solvernode->child.end(); it != itend; ++it)
+        if (node->hasParent(it->get()))
+            return it->get();
+    // Then check if it is a grand-childs of one of the child nodes of the solver node
+    for (simulation::Node::ChildIterator it = solvernode->child.begin(), itend = solvernode->child.end(); it != itend; ++it)
+        if (node->getContext()->hasAncestor(it->get()))
+            return it->get();
+    // group not found, simply return the solver node
+    
+    
     return solvernode;
 }
 
