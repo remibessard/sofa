@@ -422,6 +422,9 @@ void PointCollisionModel<DataTypes>::draw(const core::visual::VisualParams* vpar
         if (vparams->displayFlags().getShowWireFrame())
             vparams->drawTool()->setPolygonMode(0, true);
 
+        if (mstate == NULL)
+            return;
+
         // Check topological modifications
         const auto npoints = mstate->getSize();
         if (npoints != size)
