@@ -25,20 +25,52 @@
 #include <sofa/core/objectmodel/BaseData.h>
 #include <sofa/core/loader/MeshLoader.h>
 
-namespace sofa::component::loader::basevtkreader
-{
-    class BaseVTKReader ;
-}
+#include <iostream>
+#include <cstdio>
+#include <sstream>
+
+#include <tinyxml.h>
+
+#include <SofaLoader/BaseVTKReader.h>
+using sofa::component::loader::BaseVTKReader;
+
+//namespace sofa::component::loader::basevtkreader
+//{
+//    class BaseVTKReader ;
+//}
 
 namespace sofa::component::loader
 {
 using basevtkreader::BaseVTKReader ;
 
+
+class SOFA_SOFALOADER_API LegacyVTKReader : public BaseVTKReader
+{
+public:
+    bool readFile(const char* filename) override;
+};
+
+class SOFA_SOFALOADER_API XMLVTKReader : public BaseVTKReader
+{
+public:
+    bool readFile(const char* filename) override;
+protected:
+    bool loadUnstructuredGrid(TiXmlHandle datasetFormatHandle);
+    bool loadPolydata(TiXmlHandle datasetFormatHandle);
+    bool loadRectilinearGrid(TiXmlHandle datasetFormatHandle);
+    bool loadStructuredGrid(TiXmlHandle datasetFormatHandle);
+    bool loadStructuredPoints(TiXmlHandle datasetFormatHandle);
+    bool loadImageData(TiXmlHandle datasetFormatHandle);
+    BaseVTKDataIO* loadDataArray(TiXmlElement* dataArrayElement, int size, std::string type);
+    BaseVTKDataIO* loadDataArray(TiXmlElement* dataArrayElement, int size);
+    BaseVTKDataIO* loadDataArray(TiXmlElement* dataArrayElement);
+};
+
 /// Format doc: http://www.vtk.org/VTK/img/file-formats.pdf
 /// http://www.cacr.caltech.edu/~slombey/asci/vtk/vtk_formats.simple.html
 class SOFA_SOFALOADER_API MeshVTKLoader : public sofa::core::loader::MeshLoader
 {
-
+    friend class ExtendedVTKLoader;
 public:
     SOFA_CLASS(MeshVTKLoader,sofa::core::loader::MeshLoader);
 

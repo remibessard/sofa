@@ -49,11 +49,14 @@ enum class VTKDatasetFormat { IMAGE_DATA, STRUCTURED_POINTS,
                               POLYDATA, UNSTRUCTURED_GRID
                             };
 
-class BaseVTKReader : public BaseObject
+class SOFA_SOFALOADER_API BaseVTKReader : public BaseObject
 {
+
 public:
-    class BaseVTKDataIO : public BaseObject
+    class SOFA_SOFALOADER_API BaseVTKDataIO : public BaseObject
     {
+
+
     public:
         string name;
         int dataSize;
@@ -72,7 +75,7 @@ public:
     };
 
     template<class T>
-    class VTKDataIO : public BaseVTKDataIO
+    class SOFA_SOFALOADER_API VTKDataIO : public BaseVTKDataIO
     {
     public:
         T* data;
@@ -112,7 +115,7 @@ public:
 
     BaseVTKReader() ;
 
-    bool readVTK(const char* filename) ;
+    virtual bool readVTK(const char* filename) ;
 
     virtual bool readFile(const char* filename) = 0;
 };

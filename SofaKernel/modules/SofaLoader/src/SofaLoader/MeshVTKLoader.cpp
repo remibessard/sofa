@@ -21,20 +21,20 @@
 ******************************************************************************/
 #include <SofaLoader/MeshVTKLoader.h>
 
-#include <iostream>
-#include <cstdio>
-#include <sstream>
+//#include <iostream>
+//#include <cstdio>
+//#include <sstream>
 
 #include <sofa/core/ObjectFactory.h>
-#include <sofa/core/visual/VisualParams.h>
-
-#include <SofaLoader/BaseVTKReader.h>
-using sofa::component::loader::BaseVTKReader ;
+//#include <sofa/core/visual/VisualParams.h>
+//
+//#include <SofaLoader/BaseVTKReader.h>
+//using sofa::component::loader::BaseVTKReader ;
 
 /// This is needed for template specialization.
 #include <SofaLoader/BaseVTKReader.inl>
 
-#include <tinyxml.h>
+//#include <tinyxml.h>
 
 //XML VTK Loader
 #define checkError(A) if (!A) { return false; }
@@ -56,27 +56,28 @@ using std::ofstream;
 using std::string;
 using helper::vector;
 
-class LegacyVTKReader : public BaseVTKReader
-{
-public:
-    bool readFile(const char* filename) override;
-};
 
-class XMLVTKReader : public BaseVTKReader
-{
-public:
-    bool readFile(const char* filename) override;
-protected:
-    bool loadUnstructuredGrid(TiXmlHandle datasetFormatHandle);
-    bool loadPolydata(TiXmlHandle datasetFormatHandle);
-    bool loadRectilinearGrid(TiXmlHandle datasetFormatHandle);
-    bool loadStructuredGrid(TiXmlHandle datasetFormatHandle);
-    bool loadStructuredPoints(TiXmlHandle datasetFormatHandle);
-    bool loadImageData(TiXmlHandle datasetFormatHandle);
-    BaseVTKDataIO* loadDataArray(TiXmlElement* dataArrayElement, int size, string type);
-    BaseVTKDataIO* loadDataArray(TiXmlElement* dataArrayElement, int size);
-    BaseVTKDataIO* loadDataArray(TiXmlElement* dataArrayElement);
-};
+//class SOFA_SOFALOADER_API LegacyVTKReader : public BaseVTKReader
+//{
+//public:
+//bool readFile(const char* filename) override;
+//    };
+//
+//class SOFA_SOFALOADER_API XMLVTKReader : public BaseVTKReader
+// {
+//public:
+//    bool readFile(const char* filename) override;
+//protected:
+//    bool loadUnstructuredGrid(TiXmlHandle datasetFormatHandle);
+//    bool loadPolydata(TiXmlHandle datasetFormatHandle);
+//    bool loadRectilinearGrid(TiXmlHandle datasetFormatHandle);
+//    bool loadStructuredGrid(TiXmlHandle datasetFormatHandle);
+//    bool loadStructuredPoints(TiXmlHandle datasetFormatHandle);
+//    bool loadImageData(TiXmlHandle datasetFormatHandle);
+//    BaseVTKDataIO * loadDataArray(TiXmlElement* dataArrayElement, int size, string type);
+//    BaseVTKDataIO * loadDataArray(TiXmlElement* dataArrayElement, int size);
+//    BaseVTKDataIO * loadDataArray(TiXmlElement* dataArrayElement);
+//};
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////// MeshVTKLoader IMPLEMENTATION //////////////////////////////////
@@ -502,7 +503,7 @@ bool MeshVTKLoader::setInputsMesh()
         }
 
     }
-    if (reader->inputPoints)
+    /*if (reader->inputPoints)
     {
         delete reader->inputPoints;
     }
@@ -521,7 +522,7 @@ bool MeshVTKLoader::setInputsMesh()
     if (reader->inputCellTypes)
     {
         delete reader->inputCellTypes;
-    }
+    }*/
 
     return true;
 }
@@ -613,7 +614,7 @@ bool LegacyVTKReader::readFile(const char* filename)
     if (line != "DATASET POLYDATA" && line != "DATASET UNSTRUCTURED_GRID"
             && line != "DATASET POLYDATA\r" && line != "DATASET UNSTRUCTURED_GRID\r" )
     {
-        msg_error() << "Error: Unsupported data type in file '" << filename << "'." << sendl;
+        msg_error() << "Error: Unsupported data type in file '" << filename << "'.";
         return false;
     }
 
@@ -639,7 +640,7 @@ bool LegacyVTKReader::readFile(const char* filename)
             int n;
             string typestr;
             ln >> n >> typestr;
-            msg_info() << "Found " << n << " " << typestr << " points" << sendl;
+            msg_info() << "Found " << n << " " << typestr << " points";
             inputPoints = newVTKDataIO(typestr);
             if (inputPoints == nullptr)
             {
@@ -1043,7 +1044,7 @@ BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(TiXmlElement* dataArra
     return loadDataArray(dataArrayElement, size, "");
 }
 
-BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(TiXmlElement* dataArrayElement, int size, string type)
+BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(TiXmlElement* dataArrayElement, int size, std::string type)
 {
     //Type
     const char* typeStrTemp;
@@ -1261,6 +1262,7 @@ bool XMLVTKReader::loadImageData(TiXmlHandle datasetFormatHandle)
 /// 2-RegisterObject("description") + .add<> : Register the component
 int MeshVTKLoaderClass = core::RegisterObject("Mesh loader for the VTK/VTU file format.")
         .add< MeshVTKLoader >();
+
 
 } /// namespace sofa::component::loader
 
