@@ -62,5 +62,8 @@ Creator<sofa::core::collision::Contact::Factory, FrictionContact<CapsuleCollisio
 Creator<sofa::core::collision::Contact::Factory, FrictionContact<CapsuleCollisionModel<sofa::defaulttype::Rigid3Types>, OBBCollisionModel<sofa::defaulttype::Rigid3Types>> > RigidCapsuleOBBFrictionContactClass("FrictionContact",true);
 Creator<sofa::core::collision::Contact::Factory, FrictionContact<CapsuleCollisionModel<sofa::defaulttype::Rigid3Types>, RigidSphereModel> > RigidCapsuleRigidSphereFrictionContactClass("FrictionContact",true);
 
+Creator<sofa::core::collision::Contact::Factory, FrictionContact<CylinderCollisionModel<sofa::defaulttype::Vec3Types>, PointCollisionModel<sofa::defaulttype::Vec3Types>> > CylinderPointFrictionContactClass("FrictionContact", true);
+Creator<sofa::core::collision::Contact::Factory, FrictionContact<CapsuleCollisionModel<sofa::defaulttype::Vec3Types>, PointCollisionModel<sofa::defaulttype::Vec3Types>> > CapsulePointFrictionContactClass("FrictionContact", true);
+Creator<sofa::core::collision::Contact::Factory, FrictionContact<CapsuleCollisionModel<sofa::defaulttype::Vec3Types>, LineCollisionModel<sofa::defaulttype::Vec3Types>> > CapsuleLineFrictionContactClass("FrictionContact", true);
 
 } //namespace sofa::component::collision
