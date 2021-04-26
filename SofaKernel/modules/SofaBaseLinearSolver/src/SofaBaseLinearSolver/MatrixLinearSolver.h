@@ -35,6 +35,8 @@
 #include <SofaBaseLinearSolver/DiagonalMatrix.h>
 #include <sofa/core/behavior/RotationMatrix.h>
 
+#include <sofa/simulation/Node.h>
+
 namespace sofa::component::linearsolver
 {
 
@@ -171,6 +173,8 @@ public:
     typedef typename MatrixLinearSolverInternalData<Vector>::JMatrixType JMatrixType;
     typedef typename MatrixLinearSolverInternalData<Vector>::ResMatrixType ResMatrixType;
 
+    Data<bool> multiGroup;
+
     MatrixLinearSolver();
     ~MatrixLinearSolver() override ;
 
@@ -289,6 +293,33 @@ public:
     void computeResidual(const core::ExecParams* params, defaulttype::BaseVector* f) override;
 
 public:
+    bool isMultiGroup() const
+    {
+        return multiGroup.getValue();
+    }
+
+    virtual void createGroups(const core::MechanicalParams* mparams);
+
+    int getNbGroups() const
+    {
+        if (isMultiGroup()) return this->groups.size();
+        else return 1;
+    }
+
+    void setGroup(int i)
+    {
+        //serr << "setGroup("<<i<<")" << sendl;
+        if (isMultiGroup() && (unsigned)i < this->groups.size())
+        {
+            currentNode = groups[i];
+            currentGroup = &(gData[currentNode]);
+        }
+        else
+        {
+            currentNode = dynamic_cast<simulation::Node*>(this->getContext()); //simulation::Node::DynamicCast(this->getContext());
+            currentGroup = &defaultGroup;
+        }
+    }
 
     MatrixInvertData * getMatrixInvertData(defaulttype::BaseMatrix * m);
 
@@ -440,7 +471,9 @@ void MatrixLinearSolver<GraphScatteredMatrix,GraphScatteredVector,NoThreadManage
 template<> SOFA_SOFABASELINEARSOLVER_API
 void MatrixLinearSolver<GraphScatteredMatrix,GraphScatteredVector,NoThreadManager>::computeResidual(const core::ExecParams* params,defaulttype::BaseVector* f);
 
-#if !defined(SOFA_COMPONENT_LINEARSOLVER_MATRIXLINEARSOLVER_CPP)
+//#if !defined(SOFA_COMPONENT_LINEARSOLVER_MATRIXLINEARSOLVER_CPP)
+#if defined(SOFA_EXTERN_TEMPLATE) && !defined(SOFA_BUILD_BASE_LINEAR_SOLVER)
+
 extern template class SOFA_SOFABASELINEARSOLVER_API MatrixLinearSolver< GraphScatteredMatrix, GraphScatteredVector, NoThreadManager >;
 /// Extern template declarations don't prevent implicit instanciation in the case
 /// of explicitely specialized classes.  (See section 14.3.7 of the C++ standard

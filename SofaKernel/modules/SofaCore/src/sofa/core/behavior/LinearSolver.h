@@ -54,6 +54,11 @@ public:
     bool insertInNode( objectmodel::BaseNode* node ) override;
     bool removeInNode( objectmodel::BaseNode* node ) override;
 
+    virtual bool isMultiGroup() const
+    {
+        return false;
+    }
+
 }; // class BaseLinearSolver
 
 
