@@ -186,6 +186,8 @@ public:
 	/// @}
 	helper::vector<defaulttype::VecNoInit<6, Real> > m_plasticStrains; ///< one plastic strain per element
 
+    Data<Real> d_compressionHackFactor;
+
  protected:
     bool m_partialListSegment;
     bool m_updateStiffnessMatrix;

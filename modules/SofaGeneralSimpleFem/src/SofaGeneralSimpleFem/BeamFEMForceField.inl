@@ -60,6 +60,8 @@ BeamFEMForceField<DataTypes>::BeamFEMForceField()
     , m_updateStiffnessMatrix(true)
     , m_assembling(false)
     , m_edgeHandler(nullptr)
+
+    , d_compressionHackFactor(initData(&d_compressionHackFactor, (Real)1.0, "compressionHackFactor", "hacking mult. factor applied on _E (stiffnessMatrix) for modifying compression along local axis of the beam"))
 {
     m_edgeHandler = new BeamFFEdgeHandler(this, &m_beamsData);
 
@@ -83,6 +85,8 @@ BeamFEMForceField<DataTypes>::BeamFEMForceField(Real poissonRatio, Real youngMod
     , m_updateStiffnessMatrix(true)
     , m_assembling(false)
     , m_edgeHandler(nullptr)
+
+    , d_compressionHackFactor(initData(&d_compressionHackFactor, (Real)1.0, "compressionHackFactor", "hacking mult. factor applied on _E (stiffnessMatrix) for modifying compression along local axis of the beam"))
 {
     m_edgeHandler = new BeamFFEdgeHandler(this, &m_beamsData);
 
@@ -168,6 +172,11 @@ void BeamFEMForceField<DataTypes>::init()
 template <class DataTypes>
 void BeamFEMForceField<DataTypes>::reinit()
 {
+    if (!mstate.get())
+    {
+        msg_error(this) << "Can't find MechanicalState when reinit !";
+        return;
+    }
     unsigned int n = m_indexedElements->size();
     m_forces.resize( this->mstate->getSize() );
 
@@ -331,6 +340,8 @@ void BeamFEMForceField<DataTypes>::computeStiffness(int i, Index , Index )
     Real L3 = (Real) (L2 * _L);
     Real EIy = (Real)(_E * _Iy);
     Real EIz = (Real)(_E * _Iz);
+
+    _E *= d_compressionHackFactor.getValue();
 
     // Find shear-deformation parameters
     if (_Asy == 0)
