@@ -283,4 +283,15 @@ bool BaseVTKReader::readVTK(const char* filename)
     return readFile(filename);
 }
 
+template class SOFA_SOFALOADER_API BaseVTKReader::VTKDataIO<char>;
+template class SOFA_SOFALOADER_API BaseVTKReader::VTKDataIO<std::uint8_t>;
+template class SOFA_SOFALOADER_API BaseVTKReader::VTKDataIO<std::int16_t>;
+template class SOFA_SOFALOADER_API BaseVTKReader::VTKDataIO<std::uint16_t>;
+template class SOFA_SOFALOADER_API BaseVTKReader::VTKDataIO<std::int32_t>;
+template class SOFA_SOFALOADER_API BaseVTKReader::VTKDataIO<std::uint32_t>;
+template class SOFA_SOFALOADER_API BaseVTKReader::VTKDataIO<std::int64_t>;
+template class SOFA_SOFALOADER_API BaseVTKReader::VTKDataIO<std::uint64_t>;
+template class SOFA_SOFALOADER_API BaseVTKReader::VTKDataIO<float>;
+template class SOFA_SOFALOADER_API BaseVTKReader::VTKDataIO<double>;
+
 } // namespace sofa::component::loader::basevtkreader
