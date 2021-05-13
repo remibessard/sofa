@@ -123,6 +123,26 @@ void FrictionContact<TCollisionModel1,TCollisionModel2,ResponseDataTypes>::setDe
             sofa::core::collision::DetectionOutput* p = contacts[i];
             if ((o->point[0]-p->point[0]).norm2()+(o->point[1]-p->point[1]).norm2() < minDist2)
                 found = true;
+
+            if (o->elem.first.getCollisionModel()->getEnumType() == core::CollisionModel::CAPSULE_TYPE)
+            {
+                std::vector< sofa::core::collision::DetectionOutput* >::iterator it = contacts.begin();
+                while (it != contacts.end())
+                {
+                    it = std::find_if(
+                        it,
+                        contacts.end(),
+                        [&o](const sofa::core::collision::DetectionOutput* d) { return d->elem.second.getIndex() == o->elem.second.getIndex(); });
+
+                    if (it != contacts.end())
+                    {
+                        if( ((*it)->elem.first.getIndex() > o->elem.first.getIndex() - 2)
+                         && ((*it)->elem.first.getIndex() < o->elem.first.getIndex() + 2))
+                            found = true;
+                        ++it;
+                    }
+                }
+            }
         }
 
         if (!found)
