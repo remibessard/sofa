@@ -136,6 +136,7 @@ void CapsuleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
         typename TCapsule<DataTypes>::Real r;
 
         //const typename TCapsule<DataTypes>::Real distance = (typename TCapsule<DataTypes>::Real)this->proximity.getValue();
+        const SReal distance = (SReal)this->proximity.getValue();
         for (Size i=0; i<ncap; i++)
         {
             const Coord p1 = point1(i);
@@ -154,6 +155,8 @@ void CapsuleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
                     maxVec(dim) = p2(dim) + r;
                     minVec(dim) = p1(dim) - r;
                 }
+                minVec(dim) -= distance;
+                maxVec(dim) += distance;
             }
 
             cubeModel->setParentOf(i, minVec, maxVec);
