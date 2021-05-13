@@ -34,6 +34,8 @@
 #include <SofaBaseCollision/CapsuleModel.h>
 #include <SofaBaseCollision/CylinderModel.h>
 
+#include <sofa/simulation/AnimateBeginEvent.h>
+
 namespace sofa::component::collision
 {
 
@@ -50,14 +52,9 @@ public:
     Data<bool> useLMDFilters; ///< Use external cone computation (Work in Progress)
 
     int m_nb;
-    defaulttype::Vector3 m_A;
-    defaulttype::Vector3 m_B;
-    defaulttype::Vector3 m_C;
-    defaulttype::Vector3 m_T1,m_T2,m_T3;
-    defaulttype::Vector3 m_P;
     defaulttype::Vector3 m_H;
     defaulttype::Vector3 m_X;
-    defaulttype::Vector3 m_N;
+
 
 protected:
     LocalMinDistance();
@@ -98,7 +95,8 @@ public:
     int computeIntersection(Line&, Sphere&, OutputVector*);
     int computeIntersection(Line&, Line&, OutputVector*);
     int computeIntersection(Triangle&, Point&, OutputVector*);
-    int doIntersectionTrianglePoint(SReal alarmDist, Triangle& e2, core::CollisionElementIterator& e1, const defaulttype::Vector3 p, OutputVector* contacts);
+    int doIntersectionTrianglePoint(SReal alarmDist, SReal contactDist, Triangle& e2, core::CollisionElementIterator& e1, const defaulttype::Vector3 p, OutputVector* contacts);
+    int doIntersectionTrianglePoint(SReal alarmDist, SReal contactDist, Triangle& e2, Capsule& cap, int capExtremityId, OutputVector* contacts);
     int computeIntersection(Triangle&, Sphere&, OutputVector*);
     int computeIntersection(Ray&, Sphere&, OutputVector*);
     int computeIntersection(Ray&, Triangle&, OutputVector*);
@@ -112,7 +110,7 @@ public:
     int computeIntersection(Capsule&, Point&, OutputVector*);
     //int computeIntersection(Capsule&, Sphere&, OutputVector*);
     int computeIntersection(Capsule&, Line&, OutputVector*);
-    int doIntersectionCapsuleLine(Capsule& e2, core::CollisionElementIterator& e1, const defaulttype::Vector3 l1, const defaulttype::Vector3 l2, OutputVector* contacts);
+    int doIntersectionCapsuleLine(Capsule& e2, core::CollisionElementIterator& e1, const defaulttype::Vector3 l1, const defaulttype::Vector3 l2, OutputVector* contacts, Index idl1, Index idl2);
     int computeIntersection(Capsule&, Triangle&, OutputVector*);
     //int computeIntersection(Capsule&, Capsule&, OutputVector*);
 
@@ -126,6 +124,20 @@ public:
     bool testValidity(Triangle&, const defaulttype::Vector3&);
 
     void draw(const core::visual::VisualParams* vparams) override;
+    void handleEvent(core::objectmodel::Event *event);
+    Data<bool> d_showIntersectingPrimitives;
+    helper::vector<defaulttype::Vector3> m_visualPointPoints;
+    helper::vector<defaulttype::Vector3> m_visualSpherePoints;
+    helper::vector<defaulttype::Vector3> m_visualTrianglePoints;
+    helper::vector<defaulttype::Vector3> m_visualLinePoints;
+    helper::vector<defaulttype::Vector3> m_visualCapsulePoints;
+    float m_sphereRadius;
+    float m_capsuleRadius;
+
+    helper::vector<Index> m_pointContactIdsFromTriCap;
+    helper::vector<Index> m_lineContactIdsFromTriCap;
+
+
 
     /// Actions to accomplish when the broadPhase is started. By default do nothing.
     void beginBroadPhase() override {}
