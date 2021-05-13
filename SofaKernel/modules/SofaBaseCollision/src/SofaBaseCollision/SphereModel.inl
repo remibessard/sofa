@@ -149,7 +149,11 @@ void SphereCollisionModel<DataTypes>::draw(const core::visual::VisualParams* vpa
         if(d_showImpostors.getValue())
             vparams->drawTool()->drawFakeSpheres(points, radius, sofa::helper::types::RGBAColor(getColor4f()[0], getColor4f()[1], getColor4f()[2], getColor4f()[3]));
         else
+        {
+            vparams->drawTool()->setPolygonMode(0, vparams->displayFlags().getShowWireFrame());
             vparams->drawTool()->drawSpheres(points, radius, sofa::helper::types::RGBAColor(getColor4f()[0], getColor4f()[1], getColor4f()[2], getColor4f()[3]));
+            vparams->drawTool()->setPolygonMode(0, false);
+        }
         vparams->drawTool()->setLightingEnabled(false); //Disable lightning
 
     }
