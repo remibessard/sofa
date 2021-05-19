@@ -453,15 +453,22 @@ void BeamFEMForceField<DataTypes>::accumulateForceLarge( VecDeriv& f, const VecC
 	if (d_alternativeBeamDescription.getValue())
 	{
 		Vec3 Pmiddle, Pmiddle_rest;
-		Vec3 P0, P1, P2, P3;
-		Real L = (x[b].getCenter() - x[a].getCenter()).norm();
-		P0 = x[a].getCenter();
-		P3 = x[b].getCenter();
-		P1 = P0 + x[a].getOrientation().rotate(Vec3(1.0, 0, 0)*(L / 3.0));
-		P2 = P3 + x[b].getOrientation().rotate(Vec3(-1.0, 0, 0)*(L / 3.0));
+		Vec3 P1, P2;
+        const Vec3& P0 = x[a].getCenter();
+        const Vec3& P3 = x[b].getCenter();
+		Real L = (P3 - P0).norm();
+        P1 = P0 + x[a].getOrientation().rotate(Vec3( 1.0, 0, 0)*(L / 3.0));
+        P2 = P3 + x[b].getOrientation().rotate(Vec3(-1.0, 0, 0)*(L / 3.0));
 		Pmiddle = 0.125 * (P0 + P3) + 0.375 * (P1 + P2);  //bezier curve interpolation
 
-		Pmiddle_rest = x0[a].getCenter() + (x0[b].getCenter() - x0[a].getCenter()) / 2.0; //assuming straight beam at rest position
+        Vec3 P10, P20;
+        const Vec3& P00 = x0[a].getCenter();
+        const Vec3& P30 = x0[b].getCenter();
+        Real L0 = (P30 - P00).norm();
+        P10 = P00 + x0[a].getOrientation().rotate(Vec3( 1.0, 0, 0)*(L0 / 3.0));
+        P20 = P30 + x0[b].getOrientation().rotate(Vec3(-1.0, 0, 0)*(L0 / 3.0));
+        Pmiddle_rest = 0.125 * (P00 + P30) + 0.375 * (P10 + P20);
+		//Pmiddle_rest = x0[a].getCenter() + (x0[b].getCenter() - x0[a].getCenter()) / 2.0; //assuming straight beam at rest position
 
 		beamQuat(i).slerp(x[a].getOrientation(), x[b].getOrientation(), (float)0.5, true);
 		beamQuat(i).normalize();
@@ -470,17 +477,17 @@ void BeamFEMForceField<DataTypes>::accumulateForceLarge( VecDeriv& f, const VecC
 
 		// translations //
 		Vec3 PmidP0, PmidP0_rest, PmidP3, PmidP3_rest;
-		PmidP0_rest = x0[a].getCenter() - Pmiddle_rest;
+		PmidP0_rest = P00 - Pmiddle_rest;
 		PmidP0_rest = x0[a].getOrientation().inverseRotate(PmidP0_rest);
 		PmidP0 = P0 - Pmiddle;
 		PmidP0 = beamQuat(i).inverseRotate(PmidP0);
 		u0 = PmidP0 - PmidP0_rest;
 
-		PmidP3_rest = x0[b].getCenter() - Pmiddle_rest;
-		PmidP3_rest = x0[a].getOrientation().inverseRotate(PmidP3_rest);
-		PmidP3 = P3 - Pmiddle;
-		PmidP3 = beamQuat(i).inverseRotate(PmidP3);
-		u3 = PmidP3 - PmidP3_rest;
+		PmidP3_rest = P30 - Pmiddle_rest;
+		PmidP3_rest = x0[b].getOrientation().inverseRotate(PmidP3_rest);
+        PmidP3 = P3 - Pmiddle;
+        PmidP3 = beamQuat(i).inverseRotate(PmidP3);
+        u3 = PmidP3 - PmidP3_rest;
 
 		depl[0] = u0[0]; depl[1] = u0[1]; depl[2] = u0[2];
 		depl[6] = u3[0]; depl[7] = u3[1]; depl[8] = u3[2];
@@ -489,7 +496,9 @@ void BeamFEMForceField<DataTypes>::accumulateForceLarge( VecDeriv& f, const VecC
 		// rotations //
 		Quat Qmiddle, Qmiddle_rest;
 		Qmiddle = beamQuat(i);
-		Qmiddle_rest = x0[a].getOrientation();  //assuming straight beam at rest position
+        //Qmiddle_rest = x0[a].getOrientation();  //assuming straight beam at rest position
+        Qmiddle_rest.slerp(x0[a].getOrientation(), x0[b].getOrientation(), (float)0.5, true);
+        Qmiddle_rest.normalize();
 
 		Quat QmidQ0_rest, QmidQ0, QmidQ3_rest, QmidQ3;
 		QmidQ0_rest = qDiff(x0[a].getOrientation(), Qmiddle_rest);
@@ -502,11 +511,12 @@ void BeamFEMForceField<DataTypes>::accumulateForceLarge( VecDeriv& f, const VecC
 
 		QmidQ3_rest = qDiff(x0[b].getOrientation(), Qmiddle_rest);
 		QmidQ3_rest.normalize();
-		QmidQ3 = qDiff(Qmiddle, x[b].getOrientation());
+        //QmidQ3 = qDiff(Qmiddle, x[b].getOrientation());
+        QmidQ3 = qDiff(x[b].getOrientation(), Qmiddle);
 		QmidQ3.normalize();
 		dQQ_rest = qDiff(QmidQ3, QmidQ3_rest);
 		dQQ_rest.normalize();
-		dQQ_rest = dQQ_rest.inverse();
+		//dQQ_rest = dQQ_rest.inverse();
 		u3 = dQQ_rest.quatToRotationVector();
 
 		depl[3] = u0[0]; depl[4] = u0[1]; depl[5] = u0[2];
