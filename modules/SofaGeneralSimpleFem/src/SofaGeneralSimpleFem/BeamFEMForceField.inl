@@ -406,6 +406,7 @@ template<class DataTypes>
 void BeamFEMForceField<DataTypes>::initLarge(int i, Index a, Index b)
 {
     const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
+    const VecCoord& x0 = this->mstate->read(core::ConstVecCoordId::restPosition())->getValue();
 
     defaulttype::Quat quatA, quatB, dQ;
     Vec3 dW;
@@ -429,15 +430,26 @@ void BeamFEMForceField<DataTypes>::initLarge(int i, Index a, Index b)
 
     SReal Theta = dW.norm();
 
-    if(Theta>(SReal)0.0000001)
+    if (Theta > (SReal)0.0000001)
     {
         dW.normalize();
 
-        beamQuat(i) = quatA*dQ.axisToQuat(dW, Theta/2);
+        beamQuat(i) = quatA * dQ.axisToQuat(dW, Theta / 2);
         beamQuat(i).normalize();
     }
     else
-        beamQuat(i)= quatA;
+        beamQuat(i) = quatA;
+
+    helper::vector<BeamInfo>& bd = *(m_beamsData.beginEdit());
+    const Vec3& P00 = x0[a].getCenter();
+    const Vec3& P30 = x0[b].getCenter();
+    const Real L0 = (P30 - P00).norm();
+    const Vec3 P10 = P00 + x0[a].getOrientation().rotate(Vec3(1.0, 0, 0)*(L0 / 3.0));
+    const Vec3 P20 = P30 + x0[b].getOrientation().rotate(Vec3(-1.0, 0, 0)*(L0 / 3.0));
+    
+    bd[i].Pmiddle_rest = 0.125 * (P00 + P30) + 0.375 * (P10 + P20);
+    bd[i].Qmiddle_rest.slerp(x0[a].getOrientation(), x0[b].getOrientation(), (float)0.5, true);
+    bd[i].Qmiddle_rest.normalize();
 
     m_beamsData.endEdit();
 }
@@ -447,11 +459,14 @@ void BeamFEMForceField<DataTypes>::accumulateForceLarge( VecDeriv& f, const VecC
 {
     const VecCoord& x0 = this->mstate->read(core::ConstVecCoordId::restPosition())->getValue();
 
-	// local displacement
+    const helper::vector<BeamInfo>& bd = *(m_beamsData.beginEdit());
+
+    // local displacement
 	Displacement depl;
 
 	if (d_alternativeBeamDescription.getValue())
 	{
+
 		Vec3 Pmiddle, Pmiddle_rest;
 		Vec3 P1, P2;
         const Vec3& P0 = x[a].getCenter();
@@ -461,14 +476,9 @@ void BeamFEMForceField<DataTypes>::accumulateForceLarge( VecDeriv& f, const VecC
         P2 = P3 + x[b].getOrientation().rotate(Vec3(-1.0, 0, 0)*(L / 3.0));
 		Pmiddle = 0.125 * (P0 + P3) + 0.375 * (P1 + P2);  //bezier curve interpolation
 
-        Vec3 P10, P20;
-        const Vec3& P00 = x0[a].getCenter();
-        const Vec3& P30 = x0[b].getCenter();
-        Real L0 = (P30 - P00).norm();
-        P10 = P00 + x0[a].getOrientation().rotate(Vec3( 1.0, 0, 0)*(L0 / 3.0));
-        P20 = P30 + x0[b].getOrientation().rotate(Vec3(-1.0, 0, 0)*(L0 / 3.0));
-        Pmiddle_rest = 0.125 * (P00 + P30) + 0.375 * (P10 + P20);
-		//Pmiddle_rest = x0[a].getCenter() + (x0[b].getCenter() - x0[a].getCenter()) / 2.0; //assuming straight beam at rest position
+        //Vec3 P10, P20;
+        const Vec3& P0_rest = x0[a].getCenter();
+        const Vec3& P3_rest = x0[b].getCenter();
 
 		beamQuat(i).slerp(x[a].getOrientation(), x[b].getOrientation(), (float)0.5, true);
 		beamQuat(i).normalize();
@@ -477,13 +487,13 @@ void BeamFEMForceField<DataTypes>::accumulateForceLarge( VecDeriv& f, const VecC
 
 		// translations //
 		Vec3 PmidP0, PmidP0_rest, PmidP3, PmidP3_rest;
-		PmidP0_rest = P00 - Pmiddle_rest;
+		PmidP0_rest = P0_rest - bd[i].Pmiddle_rest;
 		PmidP0_rest = x0[a].getOrientation().inverseRotate(PmidP0_rest);
 		PmidP0 = P0 - Pmiddle;
 		PmidP0 = beamQuat(i).inverseRotate(PmidP0);
 		u0 = PmidP0 - PmidP0_rest;
 
-		PmidP3_rest = P30 - Pmiddle_rest;
+		PmidP3_rest = P3_rest - bd[i].Pmiddle_rest;
 		PmidP3_rest = x0[b].getOrientation().inverseRotate(PmidP3_rest);
         PmidP3 = P3 - Pmiddle;
         PmidP3 = beamQuat(i).inverseRotate(PmidP3);
@@ -494,14 +504,10 @@ void BeamFEMForceField<DataTypes>::accumulateForceLarge( VecDeriv& f, const VecC
 
 
 		// rotations //
-		Quat Qmiddle, Qmiddle_rest;
-		Qmiddle = beamQuat(i);
-        //Qmiddle_rest = x0[a].getOrientation();  //assuming straight beam at rest position
-        Qmiddle_rest.slerp(x0[a].getOrientation(), x0[b].getOrientation(), (float)0.5, true);
-        Qmiddle_rest.normalize();
+        const Quat& Qmiddle = beamQuat(i);
 
 		Quat QmidQ0_rest, QmidQ0, QmidQ3_rest, QmidQ3;
-		QmidQ0_rest = qDiff(x0[a].getOrientation(), Qmiddle_rest);
+		QmidQ0_rest = qDiff(x0[a].getOrientation(), bd[i].Qmiddle_rest);
 		QmidQ0_rest.normalize();
 		QmidQ0 = qDiff(x[a].getOrientation(), Qmiddle);
 		QmidQ0.normalize();
@@ -509,7 +515,7 @@ void BeamFEMForceField<DataTypes>::accumulateForceLarge( VecDeriv& f, const VecC
 		dQQ_rest.normalize();
 		u0 = dQQ_rest.quatToRotationVector();
 
-		QmidQ3_rest = qDiff(x0[b].getOrientation(), Qmiddle_rest);
+		QmidQ3_rest = qDiff(x0[b].getOrientation(), bd[i].Qmiddle_rest);
 		QmidQ3_rest.normalize();
         //QmidQ3 = qDiff(Qmiddle, x[b].getOrientation());
         QmidQ3 = qDiff(x[b].getOrientation(), Qmiddle);
@@ -624,7 +630,7 @@ void BeamFEMForceField<DataTypes>::accumulateForceLarge( VecDeriv& f, const VecC
 	m_beamsData.endEdit();
 
 	// this computation can be optimised: (we know that half of "depl" is null)
-	Displacement force = m_beamsData.getValue()[i]._k_loc * depl;
+	Displacement force = bd[i]._k_loc * depl;
 
 
 	// Apply lambda transpose (we use the rotation value of point a for the beam)
