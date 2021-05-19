@@ -99,6 +99,9 @@ protected:
 
         defaulttype::Quat quat;
 
+        defaulttype::Vec3 Pmiddle_rest;
+        defaulttype::Quat Qmiddle_rest;
+
         void init(double E, double L, double nu, double r, double rInner);
 
         /// Output stream
