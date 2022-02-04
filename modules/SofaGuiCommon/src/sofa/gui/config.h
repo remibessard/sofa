@@ -22,7 +22,7 @@
 #ifndef SOFA_GUI_CONFIG_H
 #define SOFA_GUI_CONFIG_H
 
-#include <SofaGui/config.h>
+#include <SofaGuiCommon/sofa/gui/config.h>
 
 #ifdef SOFA_BUILD_SOFAGUICOMMON
 #  define SOFA_TARGET SofaGuiCommon

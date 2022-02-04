@@ -45,7 +45,7 @@ list(APPEND SOURCE_FILES
     ${SRC_ROOT}/RayTriangleVisitor.cpp
     ${SRC_ROOT}/RuleBasedContactManager.cpp
     ${SRC_ROOT}/SolverMerger.cpp
-    ${SRC_ROOT}/TetrahedronBarycentricPenalityContact.cpp
+    #${SRC_ROOT}/TetrahedronBarycentricPenalityContact.cpp
     ${SRC_ROOT}/TetrahedronDiscreteIntersection.cpp
     ${SRC_ROOT}/TetrahedronFrictionContact.cpp
     ${SRC_ROOT}/TetrahedronModel.cpp

@@ -97,11 +97,12 @@ protected:
     BarycentricMapping(core::State<In>* from=nullptr, core::State<Out>* to=nullptr,
                        BaseMeshTopology * from_topology=nullptr );
 
-    ~BarycentricMapping() override {}
+    ~BarycentricMapping() override;// {}
     void updateForceMask() override;
 
     /// eigen matrix for use with Compliant plugin
     eigen_type eigen;
+    defaulttype::BaseMatrix *internalMatrix; 
     helper::vector< defaulttype::BaseMatrix* > js;
 
 private:
