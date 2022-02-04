@@ -146,7 +146,7 @@ bool RadioDataWidget::createWidgets()
 {
     QVBoxLayout* layout = new QVBoxLayout(this);
     sofa::helper::OptionsGroup m_radiotrick = getData()->virtualGetValue();
-    const unsigned int LIMIT_NUM_BUTTON=4;
+    const unsigned int LIMIT_NUM_BUTTON=8;
     buttonMode=m_radiotrick.size() < LIMIT_NUM_BUTTON;
     if (buttonMode)
     {
@@ -205,7 +205,8 @@ void RadioDataWidget::readFromData()
 
     if (buttonMode)
     {
-        buttonList->button(m_radiotrick.getSelectedId())->setChecked(true);
+        if(m_radiotrick.getSelectedItem() != "")
+            buttonList->button(m_radiotrick.getSelectedId())->setChecked(true);
     }
     else
     {

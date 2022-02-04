@@ -97,13 +97,13 @@ void PipelineImpl::computeCollisionReset()
 {
     simulation::Node* root = dynamic_cast<simulation::Node*>(getContext());
     if(root == nullptr) return;
+    sofa::helper::AdvancedTimer::stepBegin("CollisionReset");
     if (broadPhaseDetection!=nullptr && broadPhaseDetection->getIntersectionMethod()!=intersectionMethod)
         broadPhaseDetection->setIntersectionMethod(intersectionMethod);
     if (narrowPhaseDetection!=nullptr && narrowPhaseDetection->getIntersectionMethod()!=intersectionMethod)
         narrowPhaseDetection->setIntersectionMethod(intersectionMethod);
     if (contactManager!=nullptr && contactManager->getIntersectionMethod()!=intersectionMethod)
         contactManager->setIntersectionMethod(intersectionMethod);
-    sofa::helper::AdvancedTimer::stepBegin("CollisionReset");
     doCollisionReset();
     sofa::helper::AdvancedTimer::stepEnd("CollisionReset");
 }
@@ -112,9 +112,11 @@ void PipelineImpl::computeCollisionDetection()
 {
     simulation::Node* root = dynamic_cast<simulation::Node*>(getContext());
     if(root == nullptr) return;
+    sofa::helper::AdvancedTimer::stepBegin("CollisionDetection");
     std::vector<CollisionModel*> collisionModels;
     root->getTreeObjects<CollisionModel>(&collisionModels);
     doCollisionDetection(collisionModels);
+    sofa::helper::AdvancedTimer::stepEnd("CollisionDetection");
 }
 
 void PipelineImpl::computeCollisionResponse()

@@ -71,6 +71,7 @@ SphereROI<DataTypes>::SphereROI()
 
     f_indices.beginEdit()->push_back(0);
     f_indices.endEdit();
+    f_listening.setValue(true);
 }
 
 template <class DataTypes>

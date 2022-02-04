@@ -295,11 +295,6 @@ simulation::Node* DefaultCollisionGroupManager::getIntegrationNode(core::Collisi
     if (solvernode->linearSolver.empty())
         return solvernode; // no linearsolver
     core::behavior::BaseLinearSolver * linearSolver = solvernode->linearSolver[0];
-    if (!linearSolver->isMultiGroup())
-    {
-        //std::cout << "Linear solver " << linearSolver->getName() << " of CM " << model->getName() << " is not multi-group" << std::endl;
-        return solvernode;
-    }
     // This solver handles multiple groups, we have to find which group contains this collision model
     // First move up to the node of the initial mechanical object
     while (node->mechanicalMapping && node->mechanicalMapping->getMechFrom()[0])
