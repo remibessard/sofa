@@ -136,8 +136,8 @@ void FrictionContact<TCollisionModel1,TCollisionModel2,ResponseDataTypes>::setDe
 
                     if (it != contacts.end())
                     {
-                        if( ((*it)->elem.first.getIndex() > o->elem.first.getIndex() - 2)
-                         && ((*it)->elem.first.getIndex() < o->elem.first.getIndex() + 2))
+                        if( ((*it)->elem.first.getIndex() == o->elem.first.getIndex() - 1)
+                         || ((*it)->elem.first.getIndex() == o->elem.first.getIndex() + 1))
                             found = true;
                         ++it;
                     }
