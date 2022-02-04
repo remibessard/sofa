@@ -286,6 +286,8 @@ public:
 
     Sequence<sofa::core::objectmodel::BaseObject> unsorted;
 
+    Data< bool > f_updateBBox;
+
     /// @}
 
     /// @name Set/get objects

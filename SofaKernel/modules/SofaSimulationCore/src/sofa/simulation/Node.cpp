@@ -91,6 +91,9 @@ Node::Node(const std::string& name)
     , debug_(false)
     , initialized(false)
     , depend(initData(&depend,"depend","Dependencies between the nodes.\nname 1 name 2 name3 name4 means that name1 must be initialized before name2 and name3 before name4"))
+
+    , f_updateBBox(initData(&f_updateBBox, true, "updateBBox", "if true (default), update this object bounding box"))
+
 {
     _context = this;
     setName(name);

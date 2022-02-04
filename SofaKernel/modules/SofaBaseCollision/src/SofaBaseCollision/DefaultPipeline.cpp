@@ -29,6 +29,7 @@
 #include <sofa/core/collision/ContactManager.h>
 
 #include <sofa/simulation/Node.h>
+#include <sofa/core/visual/VisualParams.h>
 
 #ifdef SOFA_DUMP_VISITOR_INFO
 #include <sofa/simulation/Visitor.h>
@@ -54,13 +55,16 @@ int DefaultPipelineClass = core::RegisterObject("The default collision detection
 
 DefaultPipeline::DefaultPipeline()
     : d_doPrintInfoMessage(initData(&d_doPrintInfoMessage, false, "verbose",
-                                    "Display extra informations at each computation step. (default=false)"))
+        "Display extra informations at each computation step. (default=false)"))
     , d_doDebugDraw(initData(&d_doDebugDraw, false, "draw",
-                             "Draw the detected collisions. (default=false)"))
+        "Draw the detected collisions. (default=false)"))
 
     //TODO(dmarchal 2017-05-16) Fix the min & max value with response from a github issue. Remove in 1 year if not done.
     , d_depth(initData(&d_depth, 6, "depth",
-                       "Max depth of bounding trees. (default=6, min=?, max=?)"))
+        "Max depth of bounding trees. (default=6, min=?, max=?)"))
+    , d_pipelineBBox(initData(&d_pipelineBBox, "pipelineBBox", "if not empty, objects that do not intersect this bounding-box will be ignored"))
+    , d_offset(initData(&d_offset, sofa::defaulttype::Vector3(), "offset", "if not empty, offset added to the defined bbox"))
+    , m_pplnBBox()
 {
 }
 
@@ -110,10 +114,13 @@ void DefaultPipeline::doCollisionReset()
 
 void DefaultPipeline::doCollisionDetection(const helper::vector<core::CollisionModel*>& collisionModels)
 {
-    ScopedAdvancedTimer docollisiontimer("doCollisionDetection");
+    //ScopedAdvancedTimer docollisiontimer("doCollisionDetection");
 
     msg_info_when(d_doPrintInfoMessage.getValue())
          << "doCollisionDetection, compute Bounding Trees" ;
+
+    m_pplnBBox = BoundingBox(d_pipelineBBox.getValue().minBBox() - d_offset.getValue(), d_pipelineBBox.getValue().maxBBox() + d_offset.getValue());
+    d_pipelineBBox.setDirtyValue();
 
     // First, we compute a bounding volume for the collision model (for example bounding sphere)
     // or we have loaded a collision model that knows its other model
@@ -131,16 +138,20 @@ void DefaultPipeline::doCollisionDetection(const helper::vector<core::CollisionM
         helper::vector<CollisionModel*>::const_iterator it;
         const helper::vector<CollisionModel*>::const_iterator itEnd = collisionModels.end();
         int nActive = 0;
-
+        
         for (it = collisionModels.begin(); it != itEnd; ++it)
-        {
+        {   
+            if (d_pipelineBBox.isSet() && !m_pplnBBox.intersect((*it)->f_bbox.getValue()) && !m_pplnBBox.contains((*it)->f_bbox.getValue()))
+            {
+                continue;
+            }
+
             msg_info_when(d_doPrintInfoMessage.getValue())
                 << "doCollisionDetection, consider model" ;
 
             if (!(*it)->isActive()) continue;
 
             int used_depth = broadPhaseDetection->needsDeepBoundingTree() ? d_depth.getValue() : 0;
-
             if (continuous){
                 std::string msg = "Compute Continuous BoundingTree: " + (*it)->getName();
                 ScopedAdvancedTimer bboxtimer(msg.c_str());
@@ -155,6 +166,7 @@ void DefaultPipeline::doCollisionDetection(const helper::vector<core::CollisionM
             vectBoundingVolume.push_back ((*it)->getFirst());
             ++nActive;
         }
+        msg_info(this) << "nb active colliders: " << nActive;
 
 #ifdef SOFA_DUMP_VISITOR_INFO
         simulation::Visitor::printCloseNode("ComputeBoundingTree");
@@ -198,7 +210,6 @@ void DefaultPipeline::doCollisionDetection(const helper::vector<core::CollisionM
         intersectionMethod->beginNarrowPhase();
         narrowPhaseDetection->beginNarrowPhase();
         helper::vector<std::pair<CollisionModel*, CollisionModel*> >& vectCMPair = broadPhaseDetection->getCollisionModelPairs();
-
         msg_info_when(d_doPrintInfoMessage.getValue())
                 << "doCollisionDetection, "<< vectCMPair.size()<<" colliding model pairs" ;
 
@@ -275,10 +286,15 @@ std::set< std::string > DefaultPipeline::getResponseList() const
     return listResponse;
 }
 
-void DefaultPipeline::draw(const core::visual::VisualParams* )
+void DefaultPipeline::draw(const typename core::visual::VisualParams* vparams)
 {
     if (!d_doDebugDraw.getValue()) return;
     if (!narrowPhaseDetection) return;
+
+    if (!m_pplnBBox.isNull())
+    {
+        vparams->drawTool()->drawBoundingBox(m_pplnBBox.minBBox(), m_pplnBBox.maxBBox(),2.0);
+    }
 }
 
 } // namespace sofa::component::collision

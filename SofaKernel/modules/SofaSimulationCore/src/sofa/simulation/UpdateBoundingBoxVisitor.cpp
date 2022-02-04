@@ -38,6 +38,8 @@ UpdateBoundingBoxVisitor::UpdateBoundingBoxVisitor(const sofa::core::ExecParams*
 
 Visitor::Result UpdateBoundingBoxVisitor::processNodeTopDown(Node* node)
 {
+    if (!node->f_updateBBox.getValue())
+        return RESULT_PRUNE;
     std::string msg = "BoundingBoxVisitor - ProcessTopDown: " + node->getName();
     sofa::helper::ScopedAdvancedTimer timer(msg.c_str());
     using namespace sofa::core::objectmodel;

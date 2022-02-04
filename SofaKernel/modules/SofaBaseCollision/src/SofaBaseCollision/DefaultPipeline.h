@@ -23,6 +23,8 @@
 #include <SofaBaseCollision/config.h>
 
 #include <sofa/simulation/PipelineImpl.h>
+#include <SofaBaseCollision/CubeModel.h>
+#include <sofa/core/DataTracker.h>
 
 namespace sofa::component::collision
 {
@@ -35,6 +37,12 @@ public:
     Data<bool> d_doPrintInfoMessage;
     Data<bool> d_doDebugDraw;
     Data<int>  d_depth;
+
+    Data<sofa::defaulttype::BoundingBox > d_pipelineBBox;
+    Data<sofa::defaulttype::Vector3> d_offset;
+    sofa::defaulttype::BoundingBox m_pplnBBox;
+
+
 protected:
     DefaultPipeline();
 public:
