@@ -24,7 +24,10 @@
 #include <sofa/defaulttype/Vec.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <SofaBaseCollision/CubeModel.h>
+#include <sofa/core/ObjectFactory.h>
 
+#include <sofa/core/objectmodel/BaseObject.h>
+using sofa::core::objectmodel::ComponentState;
 
 namespace sofa::component::collision
 {
@@ -91,7 +94,7 @@ void CapsuleCollisionModel<DataTypes>::init()
     if (!bmt)
     {
         msg_error() << "No topology component found at path: " << l_topology.getLinkedPath() << ", nor in current context: " << this->getContext()->name;
-        sofa::core::objectmodel::BaseObject::d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
+        d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
         return;
     }
 
@@ -103,6 +106,8 @@ void CapsuleCollisionModel<DataTypes>::init()
         _capsule_points[i].first = bmt->getEdge(i)[0];
         _capsule_points[i].second= bmt->getEdge(i)[1];
     }
+    d_componentState.setValue(ComponentState::Valid);
+
 }
 
 template <class DataTypes>
@@ -128,7 +133,6 @@ void CapsuleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
     if (!isMoving() && !cubeModel->empty() && !updated){
         return; // No need to recompute BBox if immobile
     }
-
     cubeModel->resize(ncap);
     if (!empty())
     {
@@ -136,8 +140,13 @@ void CapsuleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
 
         //const typename TCapsule<DataTypes>::Real distance = (typename TCapsule<DataTypes>::Real)this->proximity.getValue();
         const SReal distance = (SReal)this->proximity.getValue();
+
         for (Size i=0; i<ncap; i++)
         {
+            if (myCollElemActiver != nullptr)
+                if(!myCollElemActiver->isCollElemActive(i,this))
+                    continue;
+
             const Coord p1 = point1(i);
             const Coord p2 = point2(i);
             r = radius(i);
@@ -145,7 +154,8 @@ void CapsuleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
             Vector3 maxVec;
             Vector3 minVec;
 
-            for(int dim = 0 ; dim < 3 ; ++dim){
+            for(int dim = 0 ; dim < 3 ; ++dim)
+            {
                 if(p1(dim) > p2(dim)){
                     maxVec(dim) = p1(dim) + r;
                     minVec(dim) = p2(dim) - r;
@@ -165,6 +175,47 @@ void CapsuleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
     }
 }
 
+template<class DataTypes>
+void CapsuleCollisionModel<DataTypes>::computeBBox(const core::ExecParams* params, bool onlyVisible)
+{
+    SOFA_UNUSED(params);
+
+    if (d_componentState.getValue() != ComponentState::Valid)
+        return;
+
+    if (!onlyVisible)
+        return;
+
+    static const Real max_real = std::numeric_limits<Real>::max();
+    Real maxBBox[3] = { -max_real,-max_real,-max_real }; //Warning: minimum of float/double is 0, not -inf
+    Real minBBox[3] = { max_real,max_real,max_real };
+
+    const auto ncap = l_topology.get()->getNbEdges();
+
+    typename TCapsule<DataTypes>::Real r;
+
+    for (Size i = 0; i < ncap; ++i)
+    {
+        if (l_collElemActiver.get() != nullptr)
+            if(l_collElemActiver.get()->isComponentStateValid())
+                if(myCollElemActiver != nullptr)
+                    if(!myCollElemActiver->isCollElemActive(i, this))
+                        continue;
+        const Coord p1 = point1(i);
+        const Coord p2 = point2(i);
+        r = radius(i);
+ 
+        for (int dim = 0; dim < 3; ++dim)
+        {
+            if (p1(dim) + r > maxBBox[dim]) maxBBox[dim] = (Real)p1[dim] + r;
+            if (p2(dim) + r > maxBBox[dim]) maxBBox[dim] = (Real)p2[dim] + r;
+            if (p1(dim) - r < minBBox[dim]) minBBox[dim] = (Real)p1[dim] - r;
+            if (p2(dim) - r < minBBox[dim]) minBBox[dim] = (Real)p2[dim] - r;
+        }
+    }
+
+    this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Real>(minBBox, maxBBox));
+}
 
 template<class DataTypes>
 void CapsuleCollisionModel<DataTypes>::draw(const core::visual::VisualParams* vparams, Index index)
@@ -200,6 +251,11 @@ void CapsuleCollisionModel<DataTypes>::draw(const core::visual::VisualParams* vp
     vparams->drawTool()->setPolygonMode(0,false);
 }
 
+template <class DataTypes>
+void CapsuleCollisionModel<DataTypes>::setDefaultRadius(Real radius)
+{
+    this->_default_radius.setValue(radius);
+}
 
 template <class DataTypes>
 typename CapsuleCollisionModel<DataTypes>::Real CapsuleCollisionModel<DataTypes>::defaultRadius() const

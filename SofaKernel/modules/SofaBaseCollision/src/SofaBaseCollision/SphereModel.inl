@@ -190,6 +190,10 @@ void SphereCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
         const typename TSphere<DataTypes>::Real distance = (typename TSphere<DataTypes>::Real)this->proximity.getValue();
         for (Size i=0; i<size; i++)
         {
+            if (myCollElemActiver != nullptr)
+                if (!myCollElemActiver->isCollElemActive(i, this))
+                    continue;
+
             TSphere<DataTypes> p(this,i);
             const typename TSphere<DataTypes>::Real r = p.r() + distance;
             const Coord minElem = p.center() - Coord(r,r,r);
@@ -252,6 +256,13 @@ void SphereCollisionModel<DataTypes>::computeContinuousBoundingTree(SReal dt, in
 }
 
 template <class DataTypes>
+void SphereCollisionModel<DataTypes>::setDefaultRadius(Real radius)
+{
+    this->defaultRadius.setValue(radius);
+}
+
+
+template <class DataTypes>
 typename SphereCollisionModel<DataTypes>::Real SphereCollisionModel<DataTypes>::getRadius(const Index i) const
 {
     if(i < this->radius.getValue().size())
@@ -279,6 +290,10 @@ void SphereCollisionModel<DataTypes>::computeBBox(const core::ExecParams* params
 
     for(Size i = 0 ; i < npoints ; ++i )
     {
+        if (l_collElemActiver.get() != nullptr && l_collElemActiver.get()->isComponentStateValid())
+            if(myCollElemActiver != nullptr && !myCollElemActiver->isCollElemActive(i, this))
+                continue;
+
         TSphere<DataTypes> t(this,i);
         const Coord& p = t.p();
         Real r = t.r();

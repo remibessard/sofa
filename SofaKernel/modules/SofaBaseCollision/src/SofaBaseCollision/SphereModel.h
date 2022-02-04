@@ -117,6 +117,8 @@ public:
 
     const VecReal& getR() const { return this->radius.getValue(); }
 
+    void setDefaultRadius(Real radius);
+        
     Real getRadius(const Index i) const;
 
     const Coord & velocity(Index index)const;

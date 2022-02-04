@@ -40,9 +40,9 @@ int RigidCylinderCollisionModelClass = core::RegisterObject("Collision model whi
 /////
 ///// RIGID3 IMPLEMENTATION
 /////
-const sofa::defaulttype::Quaternion CylinderCollisionModel<defaulttype::Rigid3Types >::orientation(Index index)const {
-    return m_mstate->read(core::ConstVecCoordId::position())->getValue()[index].getOrientation();
-}
+//const sofa::defaulttype::Quaternion CylinderCollisionModel<defaulttype::Rigid3Types >::orientation(Index index)const {
+//    return m_mstate->read(core::ConstVecCoordId::position())->getValue()[index].getOrientation();
+//}
 // 
 ///--------------------------------------------------------------------------------------------------------------------///
 ///

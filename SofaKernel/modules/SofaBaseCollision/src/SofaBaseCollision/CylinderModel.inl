@@ -212,6 +212,12 @@ void CylinderCollisionModel<DataTypes>::draw(const core::visual::VisualParams* v
 
 
 template<class DataTypes>
+void CylinderCollisionModel< DataTypes >::setDefaultRadius(Real radius)
+{
+    this->d_default_radius.setValue(radius);
+}
+
+template<class DataTypes>
 typename CylinderCollisionModel<DataTypes>::Real CylinderCollisionModel< DataTypes >::defaultRadius() const
 {
     return this->d_default_radius.getValue();

@@ -131,6 +131,8 @@ public:
 
     const sofa::defaulttype::Quaternion orientation(Index index)const;
 
+    void setDefaultRadius(Real radius);
+
     Real height(Index index)const;
 
     Coord point1(Index i) const;

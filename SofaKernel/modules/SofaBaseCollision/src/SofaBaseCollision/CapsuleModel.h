@@ -107,6 +107,8 @@ public:
 
     void resize(Size size) override;
 
+    void computeBBox(const core::ExecParams* params, bool onlyVisible);
+
     void computeBoundingTree(int maxDepth=0) override;
 
     //virtual void computeContinuousBoundingTree(SReal dt, int maxDepth=0);
@@ -140,6 +142,8 @@ public:
     Real height(Index index)const;
 
     inline Size nbCap()const;
+
+    void setDefaultRadius(Real radius);
 
     Real defaultRadius()const;
 
