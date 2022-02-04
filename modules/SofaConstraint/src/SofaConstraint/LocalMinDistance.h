@@ -53,7 +53,7 @@ public:
 
     int m_nb;
     defaulttype::Vector3 m_H;
-    defaulttype::Vector3 m_X;
+    helper::vector<defaulttype::Vector3> m_SphereXs;
 
 
 protected:

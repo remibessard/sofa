@@ -66,7 +66,7 @@ LocalMinDistance::LocalMinDistance()
     , d_showIntersectingPrimitives(initData(&d_showIntersectingPrimitives, false, "showIntersectingPrimitives", "show Intersecting Primitives (at previous Step)"))
 {
     m_H = Vector3(0, 0, 0);
-    m_X = Vector3(0, 0, 0);
+    m_SphereXs = helper::vector<defaulttype::Vector3>();
     m_nb = 0;
 
     this->f_listening.setValue(true);
@@ -430,9 +430,9 @@ int LocalMinDistance::doIntersectionTrianglePoint(SReal alarmDist, SReal contact
     //const double contactDist = getContactDistance() + e1.getProximity() + e2.getProximity();
 
     detection->elem = std::pair<core::CollisionElementIterator, core::CollisionElementIterator>(e2, e1); //Tri , Point
-    Capsule* cap = dynamic_cast<Capsule*>(e1.getCollisionModel());
-    if(cap!= nullptr)
-        std::cout << "e1.getIndex: " << e1.getIndex() << "  and pos:" << p << std::endl;
+    //Capsule* cap = dynamic_cast<Capsule*>(e1.getCollisionModel());
+    //if(cap!= nullptr)
+    //    std::cout << "e1.getIndex: " << e1.getIndex() << "  and pos:" << p << std::endl;
     detection->id =  e1.getIndex(); // Point
 
     detection->normal = QP;
@@ -442,8 +442,6 @@ int LocalMinDistance::doIntersectionTrianglePoint(SReal alarmDist, SReal contact
     detection->point[1] = P -0.007 * detection->normal; //Point
     detection->value -= contactDist;
 
-    m_X = detection->point[0];
-    m_H = detection->point[1];
 
     return 1;
 }
@@ -477,9 +475,9 @@ int LocalMinDistance::doIntersectionTrianglePoint(SReal alarmDist, SReal contact
 
     alpha = (b[0] * A[1][1] - b[1] * A[0][1]) / det;
     beta = (b[1] * A[0][0] - b[0] * A[1][0]) / det;
-    if (alpha < 0.000001 ||
-        beta  < 0.000001 ||
-        alpha + beta  > 0.999999)
+    if (alpha < 0.00000000001
+        || beta  < 0.00000000001
+        || alpha + beta  > 0.999999999)
         return 0;
 
 
@@ -488,6 +486,9 @@ int LocalMinDistance::doIntersectionTrianglePoint(SReal alarmDist, SReal contact
     Q = e2.p1() + AB * alpha + AC * beta;
     Vector3 PQ = Q - P;
     Vector3 QP = -PQ;
+
+    //if (e2.getIndex() == 1659 || e2.getIndex() == 1647 || e2.getIndex() == 38)
+    //    std::cout << this->getTime() << " " << e2.getIndex() <<" pq norm: " << PQ.norm() << "  and alarmd:" << alarmDist << std::endl;
 
     if (PQ.norm2() >= alarmDist * alarmDist)
         return 0;
@@ -512,9 +513,6 @@ int LocalMinDistance::doIntersectionTrianglePoint(SReal alarmDist, SReal contact
 
     BaseMeshTopology* topology = e2.getCollisionModel()->getCollisionTopology();
     float m_baryDistFromEdge = 0.02;
-    //if (alpha < m_baryDistFromEdge || beta < m_baryDistFromEdge  ||
-    //    alpha >(1.0 - m_baryDistFromEdge) || beta >(1.0 - m_baryDistFromEdge)) //Tri-Cap contact too close to triangle edge, return and let Line-Cap take care of it
-    //    return 0;
     if (alpha < m_baryDistFromEdge)
         m_lineContactIdsFromTriCap.push_back(topology->getEdgeIndex(e2.p3Index(),e2.p1Index()));//p1 p3
     else if(beta < m_baryDistFromEdge)
@@ -540,8 +538,8 @@ int LocalMinDistance::doIntersectionTrianglePoint(SReal alarmDist, SReal contact
     detection->point[1] = P;// -0.007 *detection->normal; //Point
     detection->value -= contactDist;
 
-    m_X = detection->point[0];
-    m_H = detection->point[1];
+    m_SphereXs.push_back(detection->point[0]);
+    m_SphereXs.push_back(detection->point[1]);
 
     return 1;
 }
@@ -1440,8 +1438,6 @@ int LocalMinDistance::computeIntersection(Cylinder& e1, Point& e2, OutputVector*
             }
         }
     }
-    m_H = H;
-    m_X = X;
 
     if ((e2.p()-X).norm2() >= alarmDist * alarmDist)
         return 0;
@@ -1573,6 +1569,9 @@ int LocalMinDistance::doIntersectionCapsuleLine(Capsule& cap, core::CollisionEle
 {
     const double alarmDist = getAlarmDistance() + cap.getProximity() + e2.getProximity();
 
+    BaseMeshTopology* topology = e2.getCollisionModel()->getCollisionTopology();
+    unsigned int lineId = topology->getEdgeIndex(idl1, idl2);
+
     const defaulttype::Vector3 p1 = cap.point1();
     const defaulttype::Vector3 p2 = cap.point2();
     const defaulttype::Vector3 q1 = l1;
@@ -1593,34 +1592,58 @@ int LocalMinDistance::doIntersectionCapsuleLine(Capsule& cap, core::CollisionEle
     SReal alpha = 0.5;
     SReal beta = 0.5;
 
-    if (det < -0.000000000001 || det > 0.000000000001)//AB and CD are not on the same plane
+    if (det < -1.0e-15 || det > 1.0e-15)//AB and CD are not on the same plane
     {
         alpha = (b[0] * A[1][1] - b[1] * A[0][1]) / det;
         beta = (b[1] * A[0][0] - b[0] * A[1][0]) / det;
 
+        //if (alpha < 0)
+        //    alpha = 0;
+        //else if (alpha > 1)
+        //    alpha = 1;
+
+        //if (beta < 0)
+        //{
+        //    beta = 0;
+        //    if (std::find(m_pointContactIdsFromTriCap.begin(), m_pointContactIdsFromTriCap.end(), idl1) != m_pointContactIdsFromTriCap.end())
+        //    {
+        //        return 0;
+        //    }
+        //    else
+        //        m_pointContactIdsFromTriCap.push_back(idl1);
+        //}
+        //else if (beta > 1)
+        //{
+        //    beta = 1;
+        //    if (std::find(m_pointContactIdsFromTriCap.begin(), m_pointContactIdsFromTriCap.end(), idl2) != m_pointContactIdsFromTriCap.end())
+        //    {
+        //        return 0;
+        //    }
+        //    else
+        //        m_pointContactIdsFromTriCap.push_back(idl2);
+        //}
+
+        if (alpha < 0) {
+            alpha = 0;
+            beta = (CD * (p1 - q1)) / CD.norm2();
+        }
+        else if (alpha > 1) {
+            alpha = 1;
+            beta = (CD * (p2 - q1)) / CD.norm2();
+        }
+
+        if (beta < 0) {
+            beta = 0;
+            alpha = (AB * (q1 - p1)) / AB.norm2();
+        }
+        else if (beta > 1) {
+            beta = 1;
+            alpha = (AB * (q2 - p1)) / AB.norm2();
+        }
         if (alpha < 0)
             alpha = 0;
         else if (alpha > 1)
             alpha = 1;
-
-        if (beta < 0)
-        {
-            beta = 0;
-            if (std::find(m_pointContactIdsFromTriCap.begin(), m_pointContactIdsFromTriCap.end(), idl1) != m_pointContactIdsFromTriCap.end())
-            {
-                return 0;
-            }
-            m_pointContactIdsFromTriCap.push_back(idl1);
-        }
-        else if (beta > 1)
-        {
-            beta = 1;
-            if (std::find(m_pointContactIdsFromTriCap.begin(), m_pointContactIdsFromTriCap.end(), idl2) != m_pointContactIdsFromTriCap.end())
-            {
-                return 0;
-            }
-            m_pointContactIdsFromTriCap.push_back(idl2);
-        }
     }
     else {//Segments on a same plane. Here the idea to find the nearest points
         //is to project segment apexes on the other segment.
@@ -1633,7 +1656,6 @@ int LocalMinDistance::doIntersectionCapsuleLine(Capsule& cap, core::CollisionEle
         //So the nearest points are p and q which are respecively in the middle of cB and Cb:
         //            A--------c---p---B
         //                     C---q---b--------D
-
         Vector3 AD = q2 - p1;
         Vector3 CB = p2 - q1;
 
@@ -1724,10 +1746,20 @@ int LocalMinDistance::doIntersectionCapsuleLine(Capsule& cap, core::CollisionEle
     if (pq.norm2() >= enough_to_touch * enough_to_touch)
         return 0;
 
+    //if (lineId == 3988) {
+    //    std::cout << "alpha and beta:" << alpha << "   " << beta << std::endl;
+    //    std::cout << "p and q:" << p << "   " << q << std::endl;
+    //    std::cout << "pq norm qnd enoughtotouch:" << pq.norm() << " " << enough_to_touch << std::endl;
+    //}
+
     m_visualCapsulePoints.push_back(cap.point1());
     m_visualCapsulePoints.push_back(cap.point2());
     m_capsuleRadius = cap.radius();
     m_visualLinePoints.push_back(l1);
+    m_visualLinePoints.push_back(l2);
+    m_visualLinePoints.push_back(l1);
+    m_visualLinePoints.push_back(q);
+    m_visualLinePoints.push_back(q);
     m_visualLinePoints.push_back(l2);
 
 
@@ -1737,7 +1769,7 @@ int LocalMinDistance::doIntersectionCapsuleLine(Capsule& cap, core::CollisionEle
     const double contactDist = getContactDistance() + cap.getProximity() + e2.getProximity();
 
     detection->elem = std::pair<core::CollisionElementIterator, core::CollisionElementIterator>(cap, e2);
-    detection->id = e2.getIndex();
+    detection->id = lineId;
     detection->point[0] = p;
     detection->point[1] = q;
     detection->normal = pq;
@@ -1927,12 +1959,6 @@ int LocalMinDistance::computeIntersection(Capsule& cap, Line& e2, OutputVector* 
         //}
     }
 
-    m_visualCapsulePoints.push_back(cap.point1());
-    m_visualCapsulePoints.push_back(cap.point2());
-    m_capsuleRadius = cap.radius();
-    m_visualLinePoints.push_back(e2.p1());
-    m_visualLinePoints.push_back(e2.p2());
-
     contacts->resize(contacts->size() + 1);
     DetectionOutput *detection = &*(contacts->end() - 1);
 
@@ -2046,18 +2072,22 @@ int LocalMinDistance::computeIntersection(Capsule& cap, Triangle& tri, OutputVec
     n = 0;
 
     BaseMeshTopology* topology = tri.getCollisionModel()->getCollisionTopology();
-    if (tri_flg&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E12 
-        && std::find(m_lineContactIdsFromTriCap.begin(), m_lineContactIdsFromTriCap.end(),topology->getEdgeIndex(tri.p1Index(),tri.p2Index()))== m_lineContactIdsFromTriCap.end())
+    if (tri_flg&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E12
+        //&& std::find(m_lineContactIdsFromTriCap.begin(), m_lineContactIdsFromTriCap.end(),topology->getEdgeIndex(tri.p1Index(),tri.p2Index()))== m_lineContactIdsFromTriCap.end()
+        )
         n += doIntersectionCapsuleLine(cap, static_cast<core::CollisionElementIterator>(tri), tri_p1, tri_p2, contacts, tri.p1Index(), tri.p2Index());
         //n += doCapLineInt(cap_p1, cap_p2, cap_rad, tri_p1, tri_p2, alarmDist, contactDist, contacts, !(tri_flg&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P1), !(tri_flg&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P2));
     if (tri_flg&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E23
-        && std::find(m_lineContactIdsFromTriCap.begin(), m_lineContactIdsFromTriCap.end(), topology->getEdgeIndex(tri.p2Index(), tri.p3Index())) == m_lineContactIdsFromTriCap.end())
+        //&& std::find(m_lineContactIdsFromTriCap.begin(), m_lineContactIdsFromTriCap.end(), topology->getEdgeIndex(tri.p2Index(), tri.p3Index())) == m_lineContactIdsFromTriCap.end()
+        )
         n += doIntersectionCapsuleLine(cap, static_cast<core::CollisionElementIterator>(tri), tri_p2, tri_p3, contacts, tri.p2Index(), tri.p3Index());
         //n += doCapLineInt(cap_p1, cap_p2, cap_rad, tri_p2, tri_p3, alarmDist, contactDist, contacts, !(tri_flg&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P2), !(tri_flg&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P3));
     if (tri_flg&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_E31
-        && std::find(m_lineContactIdsFromTriCap.begin(), m_lineContactIdsFromTriCap.end(), topology->getEdgeIndex(tri.p3Index(), tri.p1Index())) == m_lineContactIdsFromTriCap.end())
+        //&& std::find(m_lineContactIdsFromTriCap.begin(), m_lineContactIdsFromTriCap.end(), topology->getEdgeIndex(tri.p3Index(), tri.p1Index())) == m_lineContactIdsFromTriCap.end()
+        )
         n += doIntersectionCapsuleLine(cap, static_cast<core::CollisionElementIterator>(tri), tri_p3, tri_p1, contacts, tri.p3Index(), tri.p1Index());
         //n += doCapLineInt(cap_p1, cap_p2, cap_rad, tri_p3, tri_p1, alarmDist, contactDist, contacts, !(tri_flg&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P3), !(tri_flg&TriangleCollisionModel<sofa::defaulttype::Vec3Types>::FLAG_P1));
+
 
 
 
@@ -2273,8 +2303,10 @@ void LocalMinDistance::handleEvent(core::objectmodel::Event *event)
         m_visualLinePoints.clear();
         m_visualTrianglePoints.clear();
         m_visualCapsulePoints.clear();
+        m_SphereXs.clear();
 
         m_pointContactIdsFromTriCap.clear();
+        m_lineContactIdsFromTriCap.clear();
     }
 }
 
@@ -2283,8 +2315,7 @@ void LocalMinDistance::draw(const core::visual::VisualParams* vparams)
     if (!vparams->displayFlags().getShowInteractionForceFields())
         return;
 
-    vparams->drawTool()->drawSphere(m_X, 0.0005, Vector4(1, 0, 1, 1));
-    vparams->drawTool()->drawSphere(m_H, 0.0005, Vector4(1, 0, 1, 1));
+    vparams->drawTool()->drawSpheres(m_SphereXs, 0.0005, Vector4(1, 0, 1, 1));
 
 
     if (!d_showIntersectingPrimitives.getValue())
