@@ -29,7 +29,7 @@ include(CMakeParseLibraryList)
 #   instead of being dispatched in SOFA install directory (between bin, libs, share, ...).
 #   If not building through SOFA, RELOCATABLE has no effect.
 macro(sofa_create_package_with_targets)
-    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_ROOT_DIR INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
+    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
     set(multiValueArgs TARGETS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -146,7 +146,7 @@ endmacro()
 #
 # check_required_components(Foo Qux)
 macro(sofa_create_package)
-    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION PACKAGE_PARENT INCLUDE_ROOT_DIR INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
+    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION PACKAGE_PARENT INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
     set(multiValueArgs TARGETS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -224,7 +224,7 @@ endmacro()
 #   Use AUTO_SET_TARGET_PROPERTIES to enable default properties setting
 #   on all targets (see sofa_auto_set_target_properties).
 macro(sofa_add_targets_to_package)
-    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_ROOT_DIR INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE OPTIMIZE_BUILD_DIR)
+    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE OPTIMIZE_BUILD_DIR)
     set(multiValueArgs TARGETS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -296,7 +296,7 @@ endfunction()
 # - INCLUDE_DIRECTORIES: if not already set, add as PUBLIC include dirs
 #     2 BUILD_INTERFACE (source dir and build dir) and 1 INSTALL_INTERFACE (install dir)
 macro(sofa_auto_set_target_properties)
-    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_ROOT_DIR INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
+    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
     set(multiValueArgs TARGETS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -319,7 +319,7 @@ endmacro()
 
 
 macro(sofa_auto_set_target_version)
-    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_ROOT_DIR INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
+    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
     set(multiValueArgs TARGETS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -365,7 +365,7 @@ endmacro()
 
 
 macro(sofa_auto_set_target_compile_definitions)
-    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_ROOT_DIR INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
+    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
     set(multiValueArgs TARGETS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -405,7 +405,7 @@ endmacro()
 
 
 macro(sofa_auto_set_target_include_directories)
-    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_ROOT_DIR INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
+    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
     set(multiValueArgs TARGETS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -470,7 +470,7 @@ endmacro()
 
 
 macro(sofa_auto_set_target_rpath)
-    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_ROOT_DIR INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
+    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
     set(multiValueArgs TARGETS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -546,7 +546,7 @@ endmacro()
 # INCLUDE_INSTALL_DIR <include_install_dir>
 #   Directory in which headers will be copied into <CMAKE_INSTALL_PREFIX>/include/<include_install_dir>
 macro(sofa_install_targets_in_package)
-    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_ROOT_DIR INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE OPTIMIZE_BUILD_DIR)
+    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE OPTIMIZE_BUILD_DIR)
     set(multiValueArgs TARGETS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -1115,7 +1115,7 @@ endmacro()
 # sofa_generate_package(NAME ${PROJECT_NAME} VERSION ${PROJECT_VERSION} TARGETS ${PROJECT_NAME} INCLUDE_INSTALL_DIR "sofa/custom/install/dir" INCLUDE_SOURCE_DIR src )
 #
 function(sofa_generate_package)
-    set(oneValueArgs NAME VERSION INCLUDE_ROOT_DIR INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
+    set(oneValueArgs NAME VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
     set(multiValueArgs TARGETS)
     cmake_parse_arguments("ARG" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
