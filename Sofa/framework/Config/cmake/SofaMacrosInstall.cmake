@@ -213,6 +213,16 @@ macro(sofa_create_package)
 
     if(ARG_RELOCATABLE)
         sofa_set_project_install_relocatable(${package_install_dir} ${CMAKE_CURRENT_BINARY_DIR} ${ARG_RELOCATABLE})
+
+        # Windows: Duplicate plugin dlls in Sofa/bin 
+        if(CMAKE_CONFIGURATION_TYPES) # Multi-config generator (MSVC)
+            string(REPLACE "../" "" PURE_ARG_RELOCATABLE "${ARG_RELOCATABLE}") # keep out-of-tree headers
+            if(${PURE_ARG_RELOCATABLE} STREQUAL "plugins")
+                install(TARGETS ${ARG_TARGETS}
+                RUNTIME DESTINATION "../../bin" COMPONENT applications
+                )
+            endif()
+        endif()
     endif()
 
     sofa_install_git_infos(${ARG_PACKAGE_NAME} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -915,6 +925,9 @@ function(sofa_install_libraries)
             # Install the libs
             if(WIN32)
                 install(FILES ${SHARED_LIBS} DESTINATION "bin" COMPONENT applications)
+
+                # Duplicate plugins dlls in Sofa/bin
+                install(FILES ${SHARED_LIBS} DESTINATION "../../bin" COMPONENT applications)
             else()
                 install(FILES ${SHARED_LIBS} DESTINATION "lib" COMPONENT applications)
             endif()
@@ -923,14 +936,7 @@ function(sofa_install_libraries)
             # Copy the libs (Windows only)
             if(WIN32 AND NOT no_copy)
                 foreach(SHARED_LIB ${SHARED_LIBS})
-                    if(CMAKE_CONFIGURATION_TYPES) # Multi-config generator (Visual Studio)
-                        if(NOT EXISTS "${runtime_output_dir}/${BUILD_TYPE}")
-                            file(MAKE_DIRECTORY "${runtime_output_dir}/${BUILD_TYPE}/")
-                        endif()
-                        configure_file(${SHARED_LIB} "${runtime_output_dir}/${BUILD_TYPE}/" COPYONLY)
-                    else()                        # Single-config generator (nmake, ninja)
-                        configure_file(${SHARED_LIB} "${runtime_output_dir}/" COPYONLY)
-                    endif()
+                    configure_file(${SHARED_LIB} "${runtime_output_dir}/" COPYONLY)
                 endforeach()
             endif()
         endforeach()

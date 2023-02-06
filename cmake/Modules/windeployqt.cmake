@@ -61,38 +61,11 @@ function(windeployqt target build_dir install_dir)
         COMMAND if exist "${build_dir}/$<CONFIG>/" (${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_BINARY_DIR}/windeployqt" "${build_dir}/$<CONFIG>") else (${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_BINARY_DIR}/windeployqt" "${build_dir}")
         )
 
-    # copy deployment directory during installation
-    if(CMAKE_CONFIGURATION_TYPES) # Multi-config generator (MSVC)
-        foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
-            install(
-                DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/"
-                DESTINATION bin/${CONFIG}
-                OPTIONAL
-                COMPONENT applications
-                PATTERN "resources" EXCLUDE
-                PATTERN "translations" EXCLUDE
-                )
-        endforeach()
-    else()
-        install(
-            DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/"
-            DESTINATION bin
-            COMPONENT applications
-            PATTERN "resources" EXCLUDE
-            PATTERN "translations" EXCLUDE
-            )
-    endif()
     install(
-        DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/resources/"
-        DESTINATION resources
-        OPTIONAL
+        DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/"
+        DESTINATION bin
         COMPONENT applications
-        )
-    install(
-        DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/translations/"
-        DESTINATION translations
-        OPTIONAL
-        COMPONENT applications
+        PATTERN "translations" EXCLUDE
         )
 
     # windeployqt doesn't work correctly with the system runtime libraries,
@@ -103,22 +76,11 @@ function(windeployqt target build_dir install_dir)
 
     include(InstallRequiredSystemLibraries)
 
-    if(CMAKE_CONFIGURATION_TYPES) # Multi-config generator (MSVC)
-        foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
-            install(
-                PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
-                DESTINATION bin/${CONFIG}
-                OPTIONAL
-                COMPONENT applications
-            )
-        endforeach()
-    else()
-        install(
-            PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
-            DESTINATION bin
-            COMPONENT applications
-        )
-    endif()
+    install(
+        PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
+        DESTINATION bin
+        COMPONENT applications
+    )
 
     # foreach(lib ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS})
     #     get_filename_component(filename "${lib}" NAME)
