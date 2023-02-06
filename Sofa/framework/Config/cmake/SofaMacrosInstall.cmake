@@ -355,6 +355,11 @@ macro(sofa_auto_set_target_version)
             set(target ${aliased_target})
         endif()
 
+        get_target_property(target_type ${target} TYPE)
+        if(target_type AND target_type STREQUAL "INTERFACE_LIBRARY")
+            continue()
+        endif()
+
         string(TOUPPER "${target}" sofa_target_name_upper)
         # C Preprocessor definitions do not handle dot character, so it is replaced with an underscore
         string(REPLACE "." "_" sofa_target_name_upper "${sofa_target_name_upper}")
@@ -454,7 +459,9 @@ macro(sofa_auto_set_target_include_directories)
             set(VISIBILITY INTERFACE)
         endif()
 
-        get_target_property(target_sources ${target} SOURCES)
+        if(NOT ${VISIBILITY} STREQUAL "INTERFACE")
+            get_target_property(target_sources ${target} SOURCES)
+        endif()
         if(NOT target_sources)
             set(target_sources ${ARG_PUBLIC_HEADERS} )
         else()
@@ -480,8 +487,13 @@ macro(sofa_auto_set_target_include_directories)
 
         target_include_directories(${target} ${VISIBILITY} "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>")
         
-        get_target_property(target_include_dirs ${target} "INCLUDE_DIRECTORIES")
-        get_target_property(itarget_include_dirs ${target} "INTERFACE_INCLUDE_DIRECTORIES")
+        message("${target} on ajoute la target_include_directory: ${CMAKE_BINARY_DIR}/include")
+
+        if(${VISIBILITY} STREQUAL "INTERFACE")
+            get_target_property(target_include_dirs ${target} "INTERFACE_INCLUDE_DIRECTORIES")
+        else()
+            get_target_property(target_include_dirs ${target} "INCLUDE_DIRECTORIES")
+        endif()
         if(NOT "\$<BUILD_INTERFACE:${include_source_root}>" IN_LIST target_include_dirs)
             target_include_directories(${target} ${VISIBILITY} "$<BUILD_INTERFACE:${include_source_root}>")
         endif()
@@ -523,6 +535,11 @@ macro(sofa_auto_set_target_rpath)
     endforeach()
 
     foreach(target ${ARG_TARGETS}) # Most of the time there is only one target
+        get_target_property(target_type ${target} TYPE)
+        if(target_type AND target_type STREQUAL "INTERFACE_LIBRARY")
+            continue()
+        endif()
+
         sofa_get_target_dependencies(target_deps ${target})
         get_target_property(target_rpath ${target} "INSTALL_RPATH")
         foreach(dep ${target_deps})
