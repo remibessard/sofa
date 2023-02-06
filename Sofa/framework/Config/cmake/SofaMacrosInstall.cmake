@@ -56,6 +56,7 @@ endmacro()
 #     COMPONENT_VERSION <project_version>
 #     PACKAGE_NAME <package_name>
 #     TARGETS <target1> [<target2>...] [AUTO_SET_TARGET_PROPERTIES]
+#     [PUBLIC_HEADERS <public_header1> [<public_header2>...]]
 #     [INCLUDE_SOURCE_DIR <include_source_dir>]
 #     [INCLUDE_INSTALL_DIR <include_install_dir>]
 #     [RELOCATABLE <install_dir>]
@@ -67,6 +68,12 @@ endmacro()
 # [optional] AUTO_SET_TARGET_PROPERTIES
 #   Use AUTO_SET_TARGET_PROPERTIES to enable default properties setting
 #   on all targets (see sofa_auto_set_target_properties).
+#
+# [optional] PUBLIC_HEADERS
+#   The PUBLIC_HEADERS argument allows to link header files to the build directory. 
+#   If the header files extension suffix is ".in:", for example "config.h.in", 
+#   they will be configured by cmake instead of linked. Only files in the PUBLIC_HEADERS
+#   will be installed.
 #
 # [optional] INCLUDE_SOURCE_DIR <include_source_dir>
 #   Directory from which headers will be copied, respecting subdirectories tree.
@@ -80,7 +87,7 @@ endmacro()
 #   If not building through SOFA, RELOCATABLE has no effect.
 macro(sofa_create_component_in_package_with_targets)
     set(oneValueArgs COMPONENT_NAME COMPONENT_VERSION PACKAGE_NAME INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR RELOCATABLE)
-    set(multiValueArgs TARGETS)
+    set(multiValueArgs TARGETS PUBLIC_HEADERS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     # Required arguments
@@ -225,7 +232,7 @@ endmacro()
 #   on all targets (see sofa_auto_set_target_properties).
 macro(sofa_add_targets_to_package)
     set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE OPTIMIZE_BUILD_DIR)
-    set(multiValueArgs TARGETS)
+    set(multiValueArgs TARGETS PUBLIC_HEADERS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     # Required arguments
@@ -297,7 +304,7 @@ endfunction()
 #     2 BUILD_INTERFACE (source dir and build dir) and 1 INSTALL_INTERFACE (install dir)
 macro(sofa_auto_set_target_properties)
     set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
-    set(multiValueArgs TARGETS)
+    set(multiValueArgs TARGETS PUBLIC_HEADERS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     # Required arguments
@@ -384,6 +391,11 @@ macro(sofa_auto_set_target_compile_definitions)
             set(target ${aliased_target})
         endif()
 
+        get_target_property(target_type ${target} TYPE)
+        if(target_type AND target_type STREQUAL "INTERFACE_LIBRARY")
+            continue()
+        endif()
+
         string(TOUPPER "${target}" sofa_target_name_upper)
         # C Preprocessor definitions do not handle dot character, so it is replaced with an underscore
         string(REPLACE "." "_" sofa_target_name_upper "${sofa_target_name_upper}")
@@ -406,7 +418,7 @@ endmacro()
 
 macro(sofa_auto_set_target_include_directories)
     set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE)
-    set(multiValueArgs TARGETS)
+    set(multiValueArgs TARGETS PUBLIC_HEADERS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     # Required arguments
@@ -424,7 +436,21 @@ macro(sofa_auto_set_target_include_directories)
             set(target ${aliased_target})
         endif()
 
+        # The behavior is different whether or not we have an interface target (without binary) or not
+        get_target_property(target_type ${target} TYPE)
+        set(VISIBILITY PUBLIC)
+        if (target_type STREQUAL "INTERFACE_LIBRARY")
+            set(TARGET_INTERFACE TRUE)
+            set(VISIBILITY INTERFACE)
+        endif()
+
         get_target_property(target_sources ${target} SOURCES)
+        if(NOT target_sources)
+            set(target_sources ${ARG_PUBLIC_HEADERS} )
+        else()
+            list(APPEND target_sources ${ARG_PUBLIC_HEADERS} )
+        endif()
+
         list(FILTER target_sources INCLUDE REGEX ".*(\\.h\\.in|\\.h|\\.inl)$") # keep only headers
         if(NOT target_sources)
             # target has no header
@@ -441,28 +467,32 @@ macro(sofa_auto_set_target_include_directories)
                 set(include_source_root "${CMAKE_CURRENT_SOURCE_DIR}/${ARG_INCLUDE_SOURCE_DIR}")
             endif()
         endif()
-        get_target_property(target_include_dirs ${target} "INCLUDE_DIRECTORIES")
 
+        target_include_directories(${target} ${VISIBILITY} "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>")
+        
+        get_target_property(target_include_dirs ${target} "INCLUDE_DIRECTORIES")
+        get_target_property(itarget_include_dirs ${target} "INTERFACE_INCLUDE_DIRECTORIES")
         if(NOT "\$<BUILD_INTERFACE:${include_source_root}>" IN_LIST target_include_dirs)
-            target_include_directories(${target} PUBLIC "$<BUILD_INTERFACE:${include_source_root}>")
+            target_include_directories(${target} ${VISIBILITY} "$<BUILD_INTERFACE:${include_source_root}>")
         endif()
         if(NOT "\$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include/${ARG_PACKAGE_NAME}>" IN_LIST target_include_dirs)
-            target_include_directories(${target} PUBLIC "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include/${ARG_PACKAGE_NAME}>")
+            target_include_directories(${target} ${VISIBILITY} "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include/${ARG_PACKAGE_NAME}>")
         endif()
 
         if(ARG_RELOCATABLE)
             if(NOT "\$<INSTALL_INTERFACE:include>" IN_LIST target_include_dirs)
-                target_include_directories(${target} PUBLIC "$<INSTALL_INTERFACE:include>")
+                target_include_directories(${target} ${VISIBILITY} "$<INSTALL_INTERFACE:include>")
             endif()
         elseif("${ARG_INCLUDE_INSTALL_DIR}" MATCHES "^${ARG_PACKAGE_NAME}")
             if(NOT "\$<INSTALL_INTERFACE:include/${ARG_PACKAGE_NAME}>" IN_LIST target_include_dirs)
-                target_include_directories(${target} PUBLIC "$<INSTALL_INTERFACE:include/${ARG_PACKAGE_NAME}>")
+                target_include_directories(${target} ${VISIBILITY} "$<INSTALL_INTERFACE:include/${ARG_PACKAGE_NAME}>")
             endif()
         else()
             if(NOT "\$<INSTALL_INTERFACE:include/${ARG_INCLUDE_INSTALL_DIR}>" IN_LIST target_include_dirs)
-                target_include_directories(${target} PUBLIC "$<INSTALL_INTERFACE:include/${ARG_INCLUDE_INSTALL_DIR}>")
+                target_include_directories(${target} ${VISIBILITY} "$<INSTALL_INTERFACE:include/${ARG_INCLUDE_INSTALL_DIR}>")
             endif()
         endif()
+
         #get_target_property(target_include_dirs ${target} "INCLUDE_DIRECTORIES")
         #message("${ARG_PACKAGE_NAME}: target_include_dirs = ${target_include_dirs}")
     endforeach()
@@ -546,8 +576,8 @@ endmacro()
 # INCLUDE_INSTALL_DIR <include_install_dir>
 #   Directory in which headers will be copied into <CMAKE_INSTALL_PREFIX>/include/<include_install_dir>
 macro(sofa_install_targets_in_package)
-    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_INSTALL_DIR INCLUDE_SOURCE_DIR EXAMPLE_INSTALL_DIR RELOCATABLE OPTIMIZE_BUILD_DIR)
-    set(multiValueArgs TARGETS)
+    set(oneValueArgs PACKAGE_NAME PACKAGE_VERSION INCLUDE_SOURCE_DIR INCLUDE_BUILD_DIR INCLUDE_INSTALL_DIR EXAMPLE_INSTALL_DIR RELOCATABLE OPTIMIZE_BUILD_DIR)
+    set(multiValueArgs TARGETS PUBLIC_HEADERS)
     set(optionalArgs AUTO_SET_TARGET_PROPERTIES)
     cmake_parse_arguments("ARG" "${optionalArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     # Required arguments
@@ -557,6 +587,11 @@ macro(sofa_install_targets_in_package)
             message(SEND_ERROR "Missing parameter ${arg_name}.")
         endif()
     endforeach()
+
+    # Set default build directory if none
+    if (NOT ARG_INCLUDE_BUILD_DIR)
+        set(ARG_INCLUDE_BUILD_DIR "${CMAKE_BINARY_DIR}/include/${ARG_PACKAGE_NAME}/__P__")
+    endif()
 
     install(TARGETS ${ARG_TARGETS}
             EXPORT ${ARG_PACKAGE_NAME}Targets
@@ -585,11 +620,20 @@ macro(sofa_install_targets_in_package)
 
     foreach(target ${ARG_TARGETS}) # Most of the time there is only one target
         get_target_property(target_type ${target} TYPE)
-        if(target_type AND target_type STREQUAL "INTERFACE_LIBRARY")
-            continue()
+        if(target_type AND NOT target_type STREQUAL "INTERFACE_LIBRARY")
+            get_target_property(target_sources ${target} SOURCES)
+            if (TARGET_VERSION)
+                set_target_properties(${ARG_TARGET_NAME} PROPERTIES VERSION "${TARGET_VERSION}")
+            endif()
+            set_target_properties(${ARG_TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
         endif()
+
         # Configure and install headers
-        get_target_property(target_sources ${target} SOURCES)
+        if(NOT target_sources)
+            set(target_sources ${ARG_PUBLIC_HEADERS})
+        else()
+            list(APPEND target_sources ${ARG_PUBLIC_HEADERS})
+        endif()
         list(FILTER target_sources INCLUDE REGEX ".*(\\.h\\.in|\\.h|\\.inl)$") # keep only headers
         foreach(header_file ${target_sources})
             if(NOT IS_ABSOLUTE "${header_file}")
@@ -621,6 +665,13 @@ macro(sofa_install_targets_in_package)
                 endif()
             endif()
 
+            # Set binaries output folder
+            set(dir_from_src "")
+            get_filename_component(output_filename ${header_file} NAME)
+            file(RELATIVE_PATH path_from_src "${include_source_dir}" "${header_file}")
+            get_filename_component(dir_from_src ${path_from_src} DIRECTORY)
+            get_filename_component(output_filename ${path_from_src} NAME)
+
             # Finalize dirs
             if(ARG_RELOCATABLE)
                 set(header_install_dir "include/${header_relative_dir_for_build}")
@@ -633,8 +684,10 @@ macro(sofa_install_targets_in_package)
             # Configure and install
             get_target_property(public_header ${target} PUBLIC_HEADER)
             if(header_file MATCHES ".*\\.h\\.in$")
+                string(REPLACE "__P__" "${dir_from_src}" configured_path "${ARG_INCLUDE_BUILD_DIR}")
+
                 # header to configure and install
-                file(TO_CMAKE_PATH "${CMAKE_BINARY_DIR}/include/${ARG_INCLUDE_INSTALL_DIR}/${header_relative_dir_for_build}/${header_filename}.h" configured_file)
+                file(TO_CMAKE_PATH "${configured_path}/${header_filename}.h" configured_file)
                 configure_file("${header_file}" "${configured_file}")
                 install(FILES "${configured_file}" DESTINATION "${header_install_dir}" COMPONENT headers)
                 #message("${ARG_PACKAGE_NAME}: configured_file = ${configured_file}")
