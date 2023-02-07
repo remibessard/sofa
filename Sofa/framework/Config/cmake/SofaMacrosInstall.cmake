@@ -487,8 +487,6 @@ macro(sofa_auto_set_target_include_directories)
 
         target_include_directories(${target} ${VISIBILITY} "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>")
         
-        message("${target} on ajoute la target_include_directory: ${CMAKE_BINARY_DIR}/include")
-
         if(${VISIBILITY} STREQUAL "INTERFACE")
             get_target_property(target_include_dirs ${target} "INTERFACE_INCLUDE_DIRECTORIES")
         else()
