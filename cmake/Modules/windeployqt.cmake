@@ -63,16 +63,11 @@ function(windeployqt target build_dir install_dir)
 
     # copy deployment directory during installation
     if(CMAKE_CONFIGURATION_TYPES) # Multi-config generator (MSVC)
-        foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
-            install(
-                DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/"
-                DESTINATION bin/${CONFIG}
-                OPTIONAL
-                COMPONENT applications
-                PATTERN "resources" EXCLUDE
-                PATTERN "translations" EXCLUDE
-                )
-        endforeach()
+        install(
+            DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/"
+            DESTINATION "bin/$<CONFIG>"
+            COMPONENT applications
+        )
     else()
         install(
             DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/windeployqt/"
@@ -104,14 +99,11 @@ function(windeployqt target build_dir install_dir)
     include(InstallRequiredSystemLibraries)
 
     if(CMAKE_CONFIGURATION_TYPES) # Multi-config generator (MSVC)
-        foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
-            install(
-                PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
-                DESTINATION bin/${CONFIG}
-                OPTIONAL
-                COMPONENT applications
-            )
-        endforeach()
+        install(
+            PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
+            DESTINATION "bin/$<CONFIG>"
+            COMPONENT applications
+        )
     else()
         install(
             PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}

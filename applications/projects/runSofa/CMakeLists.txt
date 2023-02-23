@@ -7,9 +7,11 @@ include(cmake/GeneratePluginConfig.cmake)
 if(MSVC)
     # plugins are located in bin/
     set(_pluginLocation "bin")
+    set(_pluginLocationInstall "bin/$<CONFIG>")
 else()
     # plugins are located in lib/
     set(_pluginLocation "lib")
+    set(_pluginLocationInstall "bin")
 endif()
 set(_configPluginFileName plugin_list.conf)
 set(_defaultConfigPluginFileName "${_configPluginFileName}.default")
@@ -17,7 +19,7 @@ set(_defaultConfigPluginFilePath "${CMAKE_BINARY_DIR}/${_pluginLocation}/${_defa
 sofa_generate_plugin_config(${_defaultConfigPluginFilePath})
 message("Write Plugin list at ${_defaultConfigPluginFilePath}")
 configure_file(${_defaultConfigPluginFilePath} ${PROJECT_BINARY_DIR}/${_defaultConfigPluginFileName} COPYONLY)
-install(FILES "${_defaultConfigPluginFilePath}" DESTINATION ${_pluginLocation}/ COMPONENT applications)
+install(FILES "${_defaultConfigPluginFilePath}" DESTINATION ${_pluginLocationInstall}/ COMPONENT applications)
 ###################################
 
 sofa_find_package(Sofa.Component.Playback QUIET)

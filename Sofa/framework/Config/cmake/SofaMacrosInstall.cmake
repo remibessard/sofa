@@ -558,9 +558,15 @@ macro(sofa_install_targets_in_package)
         endif()
     endforeach()
 
+    if(WIN32)
+        set(BIN_INSTALL_DIR "bin/$<CONFIG>")
+    else()
+        set(BIN_INSTALL_DIR "bin")
+    endif()
+
     install(TARGETS ${ARG_TARGETS}
             EXPORT ${ARG_PACKAGE_NAME}Targets
-            RUNTIME DESTINATION "bin" COMPONENT applications
+            RUNTIME DESTINATION ${BIN_INSTALL_DIR} COMPONENT applications
             LIBRARY DESTINATION "lib" COMPONENT libraries
             ARCHIVE DESTINATION "lib" COMPONENT libraries
             PUBLIC_HEADER DESTINATION "include/${ARG_INCLUDE_INSTALL_DIR}" COMPONENT headers
@@ -861,7 +867,7 @@ function(sofa_install_libraries)
 
             # Install the libs
             if(WIN32)
-                install(FILES ${SHARED_LIBS} DESTINATION "bin" COMPONENT applications)
+                install(FILES ${SHARED_LIBS} DESTINATION "bin/$<CONFIG>" COMPONENT applications)
             else()
                 install(FILES ${SHARED_LIBS} DESTINATION "lib" COMPONENT applications)
             endif()
