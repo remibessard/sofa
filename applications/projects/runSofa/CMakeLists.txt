@@ -11,7 +11,7 @@ if(MSVC)
 else()
     # plugins are located in lib/
     set(_pluginLocation "lib")
-    set(_pluginLocationInstall "bin")
+    set(_pluginLocationInstall "lib")
 endif()
 set(_configPluginFileName plugin_list.conf)
 set(_defaultConfigPluginFileName "${_configPluginFileName}.default")
