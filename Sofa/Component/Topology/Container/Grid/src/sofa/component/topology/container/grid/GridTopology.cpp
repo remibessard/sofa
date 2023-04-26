@@ -170,9 +170,9 @@ void GridTopology::GridUpdate::updateQuads()
         for (int y=0; y<n[1]-1; y++)
             for (int x=0; x<n[0]-1; x++)
                 quads.push_back(Quad(m_topology->point(x,y,z),
-                        m_topology->point(x+1,y,z),
+                        m_topology->point(x,y+1,z),
                         m_topology->point(x+1,y+1,z),
-                        m_topology->point(x,y+1,z)));
+                        m_topology->point(x+1,y,z)));
     // quads along XZ plane
     for (int z=0; z<n[2]-1; z++)
         for (int y=0; y<n[1]; y++)
