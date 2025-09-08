@@ -331,7 +331,9 @@ void Base::removeData(BaseData* d)
 }
 void Base::removeData(const sofa::type::vector<BaseData*>* d, std::string name)
 {
-    m_vecVectorData.erase(std::find(m_vecVectorData.begin(), m_vecVectorData.end(), *d));
+    m_vecVectorData.erase(std::remove(m_vecVectorData.begin(), m_vecVectorData.end(), *d),
+                          m_vecVectorData.end());
+
     const auto range = m_aliasVectorData.equal_range(name);
     m_aliasVectorData.erase(range.first, range.second);
 }
@@ -355,7 +357,6 @@ BaseData* Base::findData( const std::string &name ) const
 /// Find a vector data field given its name.
 /// Return nullptr if not found. If more than one field is found (due to aliases), only the first is
 /// returned.
-/// SHOULD DEFINITELY BE IMPROVED
 const sofa::type::vector<BaseData*>* Base::findVectordata(const std::string& name) const
 {
     // Search in the aliases
@@ -374,6 +375,7 @@ const sofa::type::vector<BaseData*>* Base::findVectordata(const std::string& nam
 /// Find a data field in vector data fields given its name.
 /// Return nullptr if not found. If more than one field is found (due to aliases), only the first is
 /// returned.
+/// SHOULD DEFINITELY BE IMPROVED
 BaseData* Base::findDataInVectorData(const std::string& name) const
 {
     if (m_vecVectorData.size())
