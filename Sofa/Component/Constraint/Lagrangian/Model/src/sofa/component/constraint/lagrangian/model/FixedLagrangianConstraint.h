@@ -52,13 +52,13 @@ public:
 
     typedef sofa::core::topology::TopologySubsetIndices SetIndex;
 
-protected:
 
     sofa::type::vector<unsigned int> m_cid;
     sofa::type::vector<Deriv> m_prevForces;
 
     SetIndex d_indices;
     Data<bool> d_fixAll; ///< If true, fix all points
+protected:
 
     FixedLagrangianConstraint(MechanicalState* object = nullptr);
     virtual ~FixedLagrangianConstraint() {}
