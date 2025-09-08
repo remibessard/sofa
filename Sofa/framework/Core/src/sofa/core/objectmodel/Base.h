@@ -187,6 +187,14 @@ public:
     /// If more than one field is found (due to aliases), only the first is returned.
     BaseData* findData( const std::string &name ) const;
 
+    /// Find a vector data field given its name. Return nullptr if not found.
+    /// If more than one field is found (due to aliases), only the first is returned.
+    const sofa::type::vector<BaseData*>* findVectordata(const std::string& name) const;
+
+    /// Find a data field in vector data fields given its name. Return nullptr if not found. 
+    /// If more than one field is found (due to aliases), only the first is returned. 
+    /// SHOULD DEFINITELY BE IMPROVED
+    BaseData* findDataInVectorData(const std::string& name) const;
 
 
     /// Find data fields given a name: several can be found as we look into the alias map
@@ -234,6 +242,7 @@ public:
     /// Note that this method should only be called if the Data was not initialized with the initData method
     void addData(BaseData* f, const std::string& name);
 
+    void addData(sofa::type::vector<BaseData*>* f, const std::string& name);
 
     /// Add a data field.
     /// Note that this method should only be called if the Data was not initialized with the initData method
@@ -242,6 +251,8 @@ public:
     /// Remove a data field.
     void removeData(BaseData* f);
 
+    /// Remove a vector data field.
+    void removeData(const sofa::type::vector<BaseData*> *d, std::string name);
 
     /// Add an alias to a Data
     void addAlias( BaseData* field, const char* alias);
@@ -256,6 +267,9 @@ public:
     typedef type::vector<BaseData*> VecData;
     typedef std::multimap<std::string, BaseData*> MapData;
 
+    typedef type::vector<type::vector<BaseData*>> VecVectorData;
+    typedef std::multimap<std::string, type::vector<BaseData*>> MapVectorData;
+
     typedef type::vector<BaseLink*> VecLink;
     typedef std::multimap<std::string, BaseLink*> MapLink;
 
@@ -264,6 +278,11 @@ public:
     const VecData& getDataFields() const { return m_vecData; }
     /// Accessor to the map containing all the aliases of this object
     const MapData& getDataAliases() const { return m_aliasData; }
+
+    /// Accessor to the vector containing all the vector data fields of this object
+    const VecVectorData& getVectorDataFields() const { return m_vecVectorData; }
+    /// Accessor to the map containing all the aliases of the vector data fields of this object
+    const MapVectorData& getVectorDataAliases() const { return m_aliasVectorData; }
 
     /// Accessor to the vector containing all the fields of this object
     const VecLink& getLinks() const { return m_vecLink; }
@@ -364,6 +383,11 @@ protected:
     VecData m_vecData;
     /// name -> Data multi-map (includes names and aliases)
     MapData m_aliasData;
+
+    /// List of fields (vectorData instances)
+    VecVectorData m_vecVectorData;
+    /// name -> Data multi-map (includes names and aliases)
+    MapVectorData m_aliasVectorData;
 
     /// List of links
     VecLink m_vecLink;

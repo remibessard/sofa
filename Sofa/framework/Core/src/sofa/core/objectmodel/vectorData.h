@@ -53,6 +53,14 @@ public:
     typedef type::vector< core::objectmodel::Data<T>* > Inherit;
     using size_type = typename Inherit::size_type;
 
+    vectorData()
+        : m_component(nullptr)
+        , m_name("emptyVecData")
+        , m_help("")
+        ,  m_dataEngineDataType(DataEngineDataType::DataEngineNothing),
+          m_defaultValue(T())
+    {}
+
     /// 'dataEngineInOut' is only valid if 'component' is a DataEngine
     vectorData(core::objectmodel::Base* component, std::string const& name, std::string const& help, DataEngineDataType dataEngineDataType= DataEngineDataType::DataEngineNothing, const T& defaultValue=T())
         : m_component(component)
@@ -66,12 +74,15 @@ public:
     {
         if( m_dataEngineDataType!= DataEngineDataType::DataEngineNothing )
         {
-            if( core::DataEngine* componentAsDataEngine = m_component->toDataEngine() )
+            if (m_component != nullptr)
             {
-                for (unsigned int i=0; i<this->size(); ++i)
+                if (core::DataEngine* componentAsDataEngine = m_component->toDataEngine())
                 {
-                    if(m_dataEngineDataType== DataEngineDataType::DataEngineInput) componentAsDataEngine->delInput((*this)[i]);
-                    else if(m_dataEngineDataType== DataEngineDataType::DataEngineOutput) componentAsDataEngine->delOutput((*this)[i]);
+                    for (unsigned int i=0; i<this->size(); ++i)
+                    {
+                        if(m_dataEngineDataType== DataEngineDataType::DataEngineInput) componentAsDataEngine->delInput((*this)[i]);
+                        else if(m_dataEngineDataType== DataEngineDataType::DataEngineOutput) componentAsDataEngine->delOutput((*this)[i]);
+                    }
                 }
             }
         }
@@ -133,8 +144,14 @@ public:
                 Data< T >* d = new Data< T >(m_defaultValue, getAStringCopy(ohelp.str().c_str()), true, false);
                 d->setName(oname.str());
                 this->push_back(d);
-                if (m_component!=nullptr)
-                    m_component->addData(d);
+
+                if (m_component != nullptr)
+                {
+                    sofa::type::vector<BaseData*>* thisbaseData =
+                        reinterpret_cast<sofa::type::vector<BaseData*>* >(this);
+                    //m_component->addData(thisbaseData, "coucou");
+                    //m_component->addData(d);
+                }
                 if (componentAsDataEngine!=nullptr)
                 {
                     if(m_dataEngineDataType== DataEngineDataType::DataEngineInput) componentAsDataEngine->addInput(d);
@@ -163,6 +180,30 @@ public:
                 out.push_back(in[j]);
         }
     }
+
+    /// Return the name of this %Data within the Base component
+    const std::string& getName() const { return m_name; }
+
+    /// Return the help of this %Data within the Base component
+    const std::string& getHelp() const { return m_help; }
+
+    /// Return the help of this %Data within the Base component
+    const size_t getSize() const { return this->size(); }
+
+    /// Return the help of this %Data within the Base component
+    const void add(Data<T>* d) { this->push_back(d); }
+
+
+    /// Return the defaultValue of this %Data within the Base component
+    const T& getDefaultValue() const { return m_defaultValue; }
+
+
+    std::string getValueTypeString() const
+    {
+        return BaseData::typeName<T>();
+    }
+
+
 
 protected:
     core::objectmodel::Base* m_component;

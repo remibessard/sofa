@@ -172,6 +172,27 @@ void Base::addData(BaseData* f, const std::string& name)
     f->setOwner(this);
 }
 
+/// Add a vector data field.
+void Base::addData(sofa::type::vector<BaseData*>* f, const std::string& name)
+{
+    if (!name.empty())
+    {
+        msg_warning_when(findData(name))
+            << "Data field name '" << name
+            << "' already used as a Data in this class or in a parent class";
+
+        msg_warning_when(findLink(name))
+            << "Data field name '" << name
+            << "' already used as a Link in this class or in a parent class";
+    }
+    m_vecVectorData.push_back(*f);
+    m_aliasVectorData.insert(std::make_pair(name, *f));
+    for (BaseData* ff : *f)
+    {
+        ff->setOwner(this);
+    }
+}
+
 /// Add an alias to a Data
 void Base::addAlias( BaseData* field, const char* alias)
 {
@@ -308,6 +329,12 @@ void Base::removeData(BaseData* d)
     const auto range = m_aliasData.equal_range(d->getName());
     m_aliasData.erase(range.first, range.second);
 }
+void Base::removeData(const sofa::type::vector<BaseData*>* d, std::string name)
+{
+    m_vecVectorData.erase(std::find(m_vecVectorData.begin(), m_vecVectorData.end(), *d));
+    const auto range = m_aliasVectorData.equal_range(name);
+    m_aliasVectorData.erase(range.first, range.second);
+}
 
 /// Find a data field given its name.
 /// Return nullptr if not found. If more than one field is found (due to aliases), only the first is returned.
@@ -325,6 +352,43 @@ BaseData* Base::findData( const std::string &name ) const
     else return nullptr;
 }
 
+/// Find a vector data field given its name.
+/// Return nullptr if not found. If more than one field is found (due to aliases), only the first is
+/// returned.
+/// SHOULD DEFINITELY BE IMPROVED
+const sofa::type::vector<BaseData*>* Base::findVectordata(const std::string& name) const
+{
+    // Search in the aliases
+    if (m_aliasVectorData.size())
+    {
+        auto range = m_aliasVectorData.equal_range(name);
+        if (range.first != range.second)
+            return &range.first->second;
+        else
+            return nullptr;
+    }
+    else
+        return nullptr;
+}
+
+/// Find a data field in vector data fields given its name.
+/// Return nullptr if not found. If more than one field is found (due to aliases), only the first is
+/// returned.
+BaseData* Base::findDataInVectorData(const std::string& name) const
+{
+    if (m_vecVectorData.size())
+    {
+        for (type::vector<BaseData*> vectorData : m_vecVectorData)
+        {
+            for (BaseData* data : vectorData)
+            {
+                if (data->getName() == name)
+                    return data;
+            }
+        }
+    }
+    return nullptr;
+}
 
 /// Find fields given a name: several can be found as we look into the alias map
 std::vector< BaseData* > Base::findGlobalField( const std::string &name ) const
@@ -385,6 +449,10 @@ bool Base::findDataLinkDest(BaseData*& ptr, const std::string& path, const BaseL
     if (!obj)
         return false;
     ptr = obj->findData(dataStr);
+    if (ptr != nullptr)
+        return ptr;
+    else
+        ptr = obj->findDataInVectorData(dataStr);
     return (ptr != nullptr);
 }
 
