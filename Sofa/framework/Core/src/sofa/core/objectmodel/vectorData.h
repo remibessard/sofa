@@ -145,18 +145,18 @@ public:
                 d->setName(oname.str());
                 this->push_back(d);
 
-                if (m_component != nullptr)
-                {
-                    sofa::type::vector<BaseData*>* thisbaseData =
-                        reinterpret_cast<sofa::type::vector<BaseData*>* >(this);
-                    //m_component->addData(thisbaseData, "coucou");
-                    //m_component->addData(d);
-                }
                 if (componentAsDataEngine!=nullptr)
                 {
                     if(m_dataEngineDataType== DataEngineDataType::DataEngineInput) componentAsDataEngine->addInput(d);
                     else if(m_dataEngineDataType== DataEngineDataType::DataEngineOutput) componentAsDataEngine->addOutput(d);
                 }
+            }
+            if (m_component != nullptr)
+            {
+                sofa::type::vector<BaseData*>* thisbaseData =
+                    reinterpret_cast<sofa::type::vector<BaseData*>* >(this);
+                //m_component->addData(d);
+                m_component->addData(thisbaseData, m_name);
             }
         }
     }
