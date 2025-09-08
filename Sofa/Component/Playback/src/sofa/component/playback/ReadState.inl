@@ -75,11 +75,12 @@ ReadState::~ReadState()
 void ReadState::init()
 {
     reset();
+    processReadState();
 }
 
 void ReadState::bwdInit()
 {
-    processReadState();
+    //processReadState();
 }
 
 
@@ -216,6 +217,11 @@ bool ReadState::readNext(double time, std::vector<std::string>& validLines)
 
         std::istringstream str(line);
         str >> cmd;
+        if (cmd == "#Names=")
+        {
+            std::string componentNameOverrider = line.erase(0, line.find_first_of(" "));
+            mmodel->addTag(componentNameOverrider);
+        }
         if (cmd == "T=")
         {
             str >> nextTime;

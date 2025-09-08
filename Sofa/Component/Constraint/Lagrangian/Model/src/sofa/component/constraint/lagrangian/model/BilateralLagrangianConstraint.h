@@ -90,7 +90,6 @@ public:
     using SubsetIndices = type::vector<Index>;
     using DataSubsetIndices = sofa::core::topology::TopologySubsetIndices;
 
-protected:
     sofa::type::vector<Deriv> m_violation;
     Quat<SReal> q;
 
@@ -113,6 +112,7 @@ protected:
     SingleLink<BilateralLagrangianConstraint<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology1; ///< Link to be set to the first topology container in order to support topological changes
     SingleLink<BilateralLagrangianConstraint<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology2; ///< Link to be set to the second topology container in order to support topological changes
 
+protected:
     std::vector<Vec3> prevForces;
 
     BilateralLagrangianConstraint(MechanicalState* object1, MechanicalState* object2) ;
