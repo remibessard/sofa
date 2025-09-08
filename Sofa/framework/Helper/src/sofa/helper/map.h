@@ -23,6 +23,7 @@
 #define SOFA_HELPER_MAP_H
 
 #include <sofa/helper/config.h>
+#include <sofa/helper/pair.h>
 
 #include <map>
 #include <iostream>

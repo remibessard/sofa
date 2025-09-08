@@ -35,7 +35,7 @@ class BaseData;
 /// it is possible to store a path in a DataLink, in that case, at each DataLink access
 /// the path is resolved to search for a corresponding Data until one is found.
 /// Once a Data is set, the path is discarded.
-class AbstractDataLink
+class SOFA_CORE_API AbstractDataLink
 {
 public:
     /// Returns the BaseData object that this DataLink belong to.
